@@ -3,6 +3,34 @@ from queue import PriorityQueue, Queue
 from grid import Grid
 from node import Node
 
+from PIL import Image
+
+
+def save_image(node, step):
+    pixels = [(255, 255, 255)] * (node.grid.w * node.grid.h)
+
+    for y in range(node.grid.h):
+        for x in range(node.grid.w):
+            if node.grid.walls[y][x]:
+                pixels[x + y * node.grid.w] = (0, 0, 0)
+            elif (x, y) == node.positions[0]:
+                pixels[x + y * node.grid.w] = (0, 0, 255)
+            elif (x, y) == node.positions[1]:
+                pixels[x + y * node.grid.w] = (128, 128, 255)
+            elif (x, y) == node.grid.starts[0]:
+                pixels[x + y * node.grid.w] = (0, 255, 0)
+            elif (x, y) == node.grid.starts[1]:
+                pixels[x + y * node.grid.w] = (128, 255, 128)
+            elif (x, y) == node.grid.goals[0]:
+                pixels[x + y * node.grid.w] = (255, 0, 0)
+            elif (x, y) == node.grid.goals[1]:
+                pixels[x + y * node.grid.w] = (255, 128, 128)
+
+    img = Image.new("RGB", (node.grid.w, node.grid.h))
+    img.putdata(pixels)
+    img.resize((node.grid.w * 100, node.grid.h * 100), Image.NEAREST)\
+        .save(f"img/step-{step}.png")
+
 
 def print_result(final_node: Node):
     stack = []
@@ -20,6 +48,7 @@ def print_result(final_node: Node):
         print(f"After {index} steps")
         index += 1
         print_node.pretty_print()
+        save_image(print_node, index)
         print()
 
 
@@ -31,8 +60,8 @@ if __name__ == "__main__":
     grid.add_wall(2, 0)
 
     print("Adding agents...")
-    grid.add_agent((0, 1), (3, 1))
-    grid.add_agent((1, 1), (4, 1))
+    grid.add_agent((0, 1), (4, 1))
+    grid.add_agent((1, 1), (0, 0))
 
     print()
     print("Solving...")

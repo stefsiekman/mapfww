@@ -86,7 +86,7 @@ class Node:
                 if self.grid.walls[y][x]:
                     print("#", end="")
                 elif (x, y) in self.positions:
-                    print("A", end="")
+                    print(self.positions.index((x, y)) + 1, end="")
                 else:
                     print(".", end="")
             print("|")
