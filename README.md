@@ -1,0 +1,3 @@
+# Multi-agent path finding with waypoints
+
+Well, not much to see just yet...
