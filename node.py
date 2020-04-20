@@ -28,8 +28,6 @@ class Node:
         pass
 
     def expand(self):
-        agents = len(self.positions)
-        # TODO: Never let happen else, make standard in constructor
         agent = self.moves.index(None)
 
         position = self.positions[agent]
