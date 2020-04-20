@@ -1,7 +1,27 @@
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
 
 from grid import Grid
 from node import Node
+
+
+def print_result(final_node: Node):
+    stack = []
+    current_node = final_node
+    while current_node is not None:
+        stack.append(current_node)
+        current_node = current_node.parent
+
+    index = 0
+    while len(stack) > 0:
+        print_node = stack.pop()
+        if not print_node.is_standard():
+            continue
+
+        print(f"After {index} steps")
+        index += 1
+        print_node.pretty_print()
+        print()
+
 
 if __name__ == "__main__":
     # Figure 3 from (Standley, 2010)
@@ -19,15 +39,18 @@ if __name__ == "__main__":
 
     open_nodes = PriorityQueue()
     node_id = 0
-    open_nodes.put((0, node_id, Node(grid, [(0, 1), (1, 1)], [None, None], 0, [])))
+    open_nodes.put(
+        (0, node_id, Node(grid, [(0, 1), (1, 1)], [None, None], 0, [])))
     node_id += 1
 
     while not open_nodes.empty():
-        print("\n\n=== Node from queue")
         f, id, node = open_nodes.get()
+        print("\n\n=== Node from queue:", node)
 
         if node.all_done():
             print("ALLL DONEEEE")
+            print()
+            print_result(node)
             break
 
         for new_node in node.expand():

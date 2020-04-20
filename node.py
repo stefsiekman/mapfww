@@ -3,12 +3,13 @@ from edge import Edge
 
 class Node:
 
-    def __init__(self, grid, positions, moves, cost, taken_edges):
+    def __init__(self, grid, positions, moves, cost, taken_edges, parent=None):
         self.grid = grid
         self.positions = positions
         self.moves = moves
         self.cost = cost
         self.taken_edges = taken_edges
+        self.parent = parent
 
         # Make node standard
         if None not in moves:
@@ -62,12 +63,31 @@ class Node:
             new_taken_edges = self.taken_edges[:]
             new_taken_edges.append(move_edge)
             new_node = Node(self.grid, self.positions, new_moves,
-                            self.cost + 1, new_taken_edges)
-            print(f"    Created new node with g={new_node.cost}, h={new_node.heuristic}")
+                            self.cost + 1, new_taken_edges, self)
+            print(
+                f"    Created new node with g={new_node.cost}, h={new_node.heuristic}")
             new_nodes.append(new_node)
 
         return new_nodes
 
+    def is_standard(self):
+        return all(move is None for move in self.moves)
+
     def all_done(self):
         return all(pos == goal
                    for pos, goal in zip(self.post_moves, self.grid.goals))
+
+    def pretty_print(self):
+        vertical_border = "+" + ("-" * (self.grid.w)) + "+"
+        print(vertical_border)
+        for y in range(self.grid.h):
+            print("|", end="")
+            for x in range(self.grid.w):
+                if self.grid.walls[y][x]:
+                    print("#", end="")
+                elif (x, y) in self.positions:
+                    print("A", end="")
+                else:
+                    print(".", end="")
+            print("|")
+        print(vertical_border)
