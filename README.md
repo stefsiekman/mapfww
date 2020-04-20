@@ -1,3 +1,3 @@
-# Multi-agent path finding with waypoints
+# Multi-agent pathfinding with waypoints
 
 Well, not much to see just yet...
