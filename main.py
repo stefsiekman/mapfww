@@ -60,7 +60,6 @@ def print_result(final_node: Node):
 
 
 if __name__ == "__main__":
-    # Figure 3 from (Standley, 2010)
     print("Creating grid...")
     grid = Grid(5, 3)
     grid.add_wall(0, 1)
