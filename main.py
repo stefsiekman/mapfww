@@ -1,12 +1,14 @@
 from queue import PriorityQueue, Queue
 
+import imageio as imageio
+
 from grid import Grid
 from node import Node
 
 from PIL import Image
 
 
-def save_image(node, step):
+def save_image(node, filename):
     pixels = [(255, 255, 255)] * (node.grid.w * node.grid.h)
 
     for y in range(node.grid.h):
@@ -28,8 +30,8 @@ def save_image(node, step):
 
     img = Image.new("RGB", (node.grid.w, node.grid.h))
     img.putdata(pixels)
-    img.resize((node.grid.w * 100, node.grid.h * 100), Image.NEAREST)\
-        .save(f"img/step-{step}.png")
+    re_img = img.resize((node.grid.w * 100, node.grid.h * 100), Image.NEAREST)
+    re_img.save(filename)
 
 
 def print_result(final_node: Node):
@@ -40,28 +42,35 @@ def print_result(final_node: Node):
         current_node = current_node.parent
 
     index = 0
+    filenames = []
     while len(stack) > 0:
         print_node = stack.pop()
         if not print_node.is_standard():
             continue
 
-        print(f"After {index} steps")
         index += 1
-        print_node.pretty_print()
-        save_image(print_node, index)
-        print()
+        filename = f"img/step-{index}.png"
+        filenames.append(filename)
+        save_image(print_node, filename)
+
+    with imageio.get_writer("img/animation.gif", mode='I', duration=0.5) as writer:
+        for filename in filenames:
+            image = imageio.imread(filename)
+            writer.append_data(image)
 
 
 if __name__ == "__main__":
     # Figure 3 from (Standley, 2010)
     print("Creating grid...")
-    grid = Grid(5, 2)
-    grid.add_wall(1, 0)
-    grid.add_wall(2, 0)
+    grid = Grid(5, 3)
+    grid.add_wall(0, 1)
+    grid.add_wall(1, 1)
+    grid.add_wall(3, 1)
+    grid.add_wall(4, 1)
 
     print("Adding agents...")
-    grid.add_agent((0, 1), (4, 1))
-    grid.add_agent((1, 1), (0, 0))
+    grid.add_agent((0, 0), (0, 2))
+    grid.add_agent((4, 2), (4, 0))
 
     print()
     print("Solving...")
@@ -69,17 +78,16 @@ if __name__ == "__main__":
     open_nodes = PriorityQueue()
     node_id = 0
     open_nodes.put(
-        (0, node_id, Node(grid, [(0, 1), (1, 1)], [None, None], 0, [])))
+        (0, node_id, Node(grid, [(0, 0), (4, 2)], [None, None], 0, [])))
     node_id += 1
 
     while not open_nodes.empty():
         f, id, node = open_nodes.get()
-        print("\n\n=== Node from queue:", node)
 
         if node.all_done():
-            print("ALLL DONEEEE")
-            print()
+            print("Done")
             print_result(node)
+            print("Saved images")
             break
 
         for new_node in node.expand():

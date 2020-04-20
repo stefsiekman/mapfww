@@ -32,30 +32,17 @@ class Node:
         agent = self.moves.index(None)
 
         position = self.positions[agent]
-        print(f"Time to process agent {agent} at {position}", end="")
-        print(f" so far: g={self.cost}, h={self.heuristic}")
-
-        print(f"  h_agent={self.grid.heuristic(agent, position)}")
-
-        print(f"  moves:       {self.moves}")
-        print(f"  positions:   {self.post_moves}")
-        print(f"  taken edges: {[str(e) for e in self.taken_edges]}")
-        print()
 
         new_nodes = []
 
         for neighbour in self.grid.valid_neighbours(position):
-            print(f"> Valid move: {neighbour}")
-
             # Check if cell is occupied by moved agent
             if neighbour in self.moves:
-                print("    !! occupied")
                 continue
 
             # Check for crossing edges
             move_edge = Edge(position, neighbour)
             if any(move_edge.conflicts(edge) for edge in self.taken_edges):
-                print("    !! edge conflict")
                 continue
 
             new_moves = self.moves[:]
@@ -64,8 +51,6 @@ class Node:
             new_taken_edges.append(move_edge)
             new_node = Node(self.grid, self.positions, new_moves,
                             self.cost + 1, new_taken_edges, self)
-            print(
-                f"    Created new node with g={new_node.cost}, h={new_node.heuristic}")
             new_nodes.append(new_node)
 
         return new_nodes
