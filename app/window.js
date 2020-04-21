@@ -7,6 +7,7 @@ export class Window {
 
   constructor(grid) {
     this.grid = grid;
+    this.slider = document.getElementById('speed-slider');
 
     this.canvas = document.getElementById('canvas');
     this.canvas.style.width = `${this.grid.w}00px`;
@@ -98,8 +99,8 @@ export class Window {
   trailGridPosition(agent, position) {
     const angle = Math.PI / this.grid.agents * 2 * agent - Math.PI / 4;
     return [
-      position[0] * 200 + 100 + Math.cos(angle) * 30,
-      position[1] * 200 + 100 + Math.sin(angle) * 30,
+      position[0] * 200 + 100 + Math.cos(angle) * 25,
+      position[1] * 200 + 100 + Math.sin(angle) * 25,
     ];
   }
 
@@ -156,6 +157,15 @@ export class Window {
 
     if (node.allAgentsAtGoal) {
       console.log('Done');
+
+      let cnode = node;
+      while (cnode !== undefined) {
+        if (cnode.isStandard) {
+          console.log(cnode.positions);
+        }
+        cnode = cnode.parent;
+      }
+
       return;
     }
 
@@ -165,7 +175,7 @@ export class Window {
 
     setTimeout(function() {
       this.solveNext();
-    }.bind(this), 100);
+    }.bind(this), this.slider.value);
   }
 
 }
