@@ -1,3 +1,5 @@
+import {PriorityQueue} from './priority-queue.js';
+
 const COLORS = ['red', 'blue', 'green'];
 
 export class Window {
@@ -88,22 +90,33 @@ export class Window {
   }
 
   solve() {
-    const goalNode = this.grid.rootNode().solve();
+    this.queue = new PriorityQueue((a, b) => a.f <= b.f);
+    this.queue.enqueue(this.grid.rootNode());
+    this.solveNext();
+  }
 
-    const nodes = [];
-    let node = goalNode;
-    while (node !== undefined) {
-      nodes.push(node);
-      node = node.parent;
+  solveNext() {
+    if (this.queue.empty) {
+      console.log('No more options, impossible to solve');
+      return;
     }
-    nodes.reverse()
 
-    nodes.forEach((node, index) => {
-      setTimeout(function() {
-        this.render()
-        this.renderNode(node)
-      }.bind(this), index * 250)
-    })
+    const node = this.queue.dequeue();
+    this.render();
+    this.renderNode(node);
+
+    if (node.allAgentsAtGoal) {
+      console.log('Done');
+      return;
+    }
+
+    node.expand().forEach(function(n) {
+      this.queue.enqueue(n);
+    }.bind(this));
+
+    setTimeout(function() {
+      this.solveNext();
+    }.bind(this), 100);
   }
 
 }

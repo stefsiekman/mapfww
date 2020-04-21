@@ -71,24 +71,4 @@ export class Node {
     return new_nodes;
   }
 
-  solve() {
-    const queue = new PriorityQueue((a, b) => a.f <= b.f);
-    queue.enqueue(this);
-
-    while (!queue.empty) {
-      const node = queue.dequeue();
-
-      if (node.allAgentsAtGoal) {
-        return node;
-      }
-
-      console.log(node, 'Added')
-      node.expand().forEach((node) => {
-        console.log(node.f, node.positions, node.moves)
-      })
-      console.log('\n\n\n')
-      node.expand().forEach((n) => queue.enqueue(n));
-    }
-  }
-
 }
