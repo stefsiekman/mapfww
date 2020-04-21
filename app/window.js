@@ -1,4 +1,5 @@
 import {PriorityQueue} from './priority-queue.js';
+import {samePositions} from './util.js';
 
 const COLORS = ['red', 'blue', 'green'];
 
@@ -54,6 +55,7 @@ export class Window {
         this.ctx.beginPath();
         this.ctx.arc(xp + xOffs, yp + yOffs, 10, 0, 6.3);
         this.ctx.fill();
+        this.ctx.closePath()
       }
     }
   }
@@ -69,13 +71,14 @@ export class Window {
     this.ctx.beginPath();
     this.ctx.moveTo(xp + 75, yp + 75);
     this.ctx.lineTo(xp + 125, yp + 125);
-
     this.ctx.stroke();
+    this.ctx.closePath()
 
     this.ctx.beginPath();
     this.ctx.moveTo(xp + 125, yp + 75);
     this.ctx.lineTo(xp + 75, yp + 125);
     this.ctx.stroke();
+    this.ctx.closePath()
   }
 
   renderNode(node) {
@@ -86,7 +89,45 @@ export class Window {
           2 * Math.PI);
       this.ctx.fillStyle = COLORS[i];
       this.ctx.fill();
+      this.ctx.closePath()
     }
+
+    this.renderParentNode(node.parent, node)
+  }
+
+  renderParentNode(parent, child) {
+    if (parent === undefined) {
+      return
+    }
+
+    if (!parent.isStandard) {
+      this.renderParentNode(parent.parent, child)
+      return
+    }
+
+    for (let i = 0; i < this.grid.agents; i++) {
+      const agent = parent.positions[i];
+      const agent_child = child.positions[i];
+
+      if (samePositions(agent, agent_child)) {
+        this.ctx.beginPath();
+        this.ctx.arc(agent[0] * 200 + 100, agent[1] * 200 + 100, 25, 0, 6.3);
+        this.ctx.fillStyle = COLORS[i];
+        this.ctx.fill();
+        this.ctx.closePath()
+      } else {
+        this.ctx.beginPath();
+        this.ctx.moveTo(agent[0] * 200 + 100, agent[1] * 200 + 100);
+        this.ctx.lineTo(agent_child[0] * 200 + 100, agent_child[1] * 200 + 100);
+        this.ctx.lineWidth = 20;
+        this.ctx.lineCap = 'round';
+        this.ctx.strokeStyle = COLORS[i];
+        this.ctx.stroke();
+        this.ctx.closePath()
+      }
+    }
+
+    this.renderParentNode(parent.parent, parent)
   }
 
   solve() {
