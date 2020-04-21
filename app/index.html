@@ -2,63 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Multi-agent pathfinding with waypoints</title>
-    <style>
-        html, body {
-            font-family: monospace;
-            color: white;
-            background-color: black;
-        }
-
-        #canvas {
-            border: 5px solid gray;
-        }
-
-        .slidecontainer {
-            width: 100%;
-        }
-
-        .slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 25px;
-            background: #d3d3d3;
-            outline: none;
-            opacity: 0.7;
-            -webkit-transition: .2s;
-            transition: opacity .2s;
-        }
-
-        .slider:hover {
-            opacity: 1;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 25px;
-            height: 25px;
-            background: #4CAF50;
-            cursor: pointer;
-        }
-
-        .slider::-moz-range-thumb {
-            width: 25px;
-            height: 25px;
-            background: #4CAF50;
-            cursor: pointer;
-        }
-    </style>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Multi-agent pathfinding (with waypoints)</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div>
-    <div>
-        <canvas id="canvas"></canvas>
-    </div>
-    <button id="btn-solve">Solve</button>
-    <p>Simulation speed:</p>
-    <div class="slidecontainer">
-        <input class="slider" type="range" min="1" max="250" stpe="1" id="speed-slider">
+    <div class="container">
+        <div class="title">
+            <h1>Multi-agent pathfinding <span class="algo">(A<sup>*</sup> + OD)</span></h1>
+        </div>
+        <div class="canvas-border">
+            <div class="canvas-container" id="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+        <div class="sidebar">
+            <p>
+                <button id="btn-solve">Solve</button>
+            </p>
+            <div class="text">
+                Simulation speed:
+            </div>
+            <div class="slidecontainer">
+                <input class="slider" type="range" min="1" max="250" step="1"
+                       id="speed-slider">
+            </div>
+            <div class="stats">
+                <p>
+                    Queue size<br>
+                    <b id="queue-size">0</b>
+                </p>
+                <p>
+                    (Max) current cost<br>
+                    <b id="current-cost">(0) 0</b>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 

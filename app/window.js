@@ -1,20 +1,24 @@
 import {PriorityQueue} from './priority-queue.js';
 import {samePositions} from './util.js';
 
-const COLORS = ['red', 'blue', 'green'];
+const COLORS = ['#CC4452', '#246180', '#801D27', '#2F98CC'];
 
 export class Window {
 
   constructor(grid) {
     this.grid = grid;
     this.slider = document.getElementById('speed-slider');
+    this.queueSize = document.getElementById('queue-size');
+    this.currentCost = document.getElementById('current-cost');
+    this.maxCost = 0;
 
     this.canvas = document.getElementById('canvas');
-    this.canvas.style.width = `${this.grid.w}00px`;
-    this.canvas.style.height = `${this.grid.h}00px`;
     this.canvas.width = this.grid.w * 200;
     this.canvas.height = this.grid.h * 200;
     this.ctx = this.canvas.getContext('2d');
+
+    document.getElementById('canvas-container').style.paddingTop =
+        (this.grid.h / this.grid.w * 100) + '%';
 
     this.render();
 
@@ -32,7 +36,7 @@ export class Window {
   renderGrid() {
     for (let y = 0; y < this.grid.h; y++) {
       for (let x = 0; x < this.grid.w; x++) {
-        this.ctx.fillStyle = this.grid.walls[y][x] ? 'black' : 'white';
+        this.ctx.fillStyle = this.grid.walls[y][x] ? '#723147' : '#F9E4AD';
         this.ctx.fillRect(x * 200, y * 200, 200, 200);
       }
     }
@@ -155,6 +159,9 @@ export class Window {
     this.render();
     this.renderNode(node);
 
+    this.maxCost = Math.max(node.cost, this.maxCost);
+    this.currentCost.innerText = `(${this.maxCost}) ${node.cost}`;
+
     if (node.allAgentsAtGoal) {
       console.log('Done');
 
@@ -172,6 +179,8 @@ export class Window {
     node.expand().forEach(function(n) {
       this.queue.enqueue(n);
     }.bind(this));
+
+    this.queueSize.innerText = `${this.queue.size}`;
 
     setTimeout(function() {
       this.solveNext();
