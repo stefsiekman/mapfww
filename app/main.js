@@ -56,6 +56,7 @@ document.getElementById('example-narrow-two').onclick = () => {
 document.getElementById('example-narrow').onclick = () => {
   const grid = new Grid(5, 5);
   grid.addWall(0, 2);
+  grid.addWall(1, 2);
   grid.addWall(3, 2);
   grid.addWall(4, 2);
   grid.addWall(1, 0);
