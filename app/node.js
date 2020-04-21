@@ -39,6 +39,18 @@ export class Node {
         (position, agent) => samePositions(position, this.grid.goals[agent]));
   }
 
+  generateEdge(from, to) {
+    const fromIndex = from[0] + from[1] * this.grid.w;
+    const toIndex = to[0] + to[1] * this.grid.w;
+
+    return [Math.min(fromIndex, toIndex), Math.max(fromIndex, toIndex)];
+  }
+
+  isEdgeTaken(from, to) {
+    const testEdge = this.generateEdge(from, to);
+    return this.taken_egdes.some((edge) => samePositions(edge, testEdge));
+  }
+
   expand() {
     console.assert(this.moves.includes(undefined),
         'Node converted to standard before expansion');
@@ -55,13 +67,14 @@ export class Node {
       }
 
       // Check for crossing edges
-      // TODO: Implement this
+      if (this.isEdgeTaken(position, neighbour)) {
+        continue;
+      }
 
       const new_moves = this.moves.slice();
       new_moves[agent] = neighbour;
       const new_taken_edges = this.taken_egdes.slice();
-      // new_taken_edges.push()
-      // TODO: Add move edge
+      new_taken_edges.push(this.generateEdge(position, neighbour));
 
       new_nodes.push(
           new Node(this.grid, this.positions, new_moves, this.cost + 1,

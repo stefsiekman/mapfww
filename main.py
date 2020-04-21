@@ -85,6 +85,7 @@ if __name__ == "__main__":
 
         if node.all_done():
             print("Done")
+            print(f"Used {node_id} nodes")
             print_result(node)
             print("Saved images")
             break
