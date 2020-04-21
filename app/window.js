@@ -144,7 +144,7 @@ export class Window {
   }
 
   solve() {
-    this.queue = new PriorityQueue((a, b) => a.f < b.f);
+    this.queue = new PriorityQueue((a, b) => a.f <= b.f);
     this.queue.enqueue(this.grid.rootNode());
     this.solveNext();
   }
