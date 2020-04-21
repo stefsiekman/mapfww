@@ -58,6 +58,14 @@ export class Node {
     const agent = this.moves.indexOf(undefined);
     const position = this.positions[agent];
 
+    // On goal? Stay with no extra cost
+    if (samePositions(this.grid.goals[agent], position)) {
+      const new_moves = this.moves.slice();
+      new_moves[agent] = position;
+      return [new Node(this.grid, this.positions, new_moves, this.cost,
+              this.taken_egdes, this)];
+    }
+
     const new_nodes = [];
 
     for (const neighbour of this.grid.validNeighbours(position)) {
