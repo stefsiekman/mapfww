@@ -184,7 +184,7 @@ export class Window {
 
     setTimeout(function() {
       this.solveNext();
-    }.bind(this), this.slider.value);
+    }.bind(this), 250 - this.slider.value);
   }
 
 }
