@@ -55,7 +55,7 @@ export class Window {
         this.ctx.beginPath();
         this.ctx.arc(xp + xOffs, yp + yOffs, 10, 0, 6.3);
         this.ctx.fill();
-        this.ctx.closePath()
+        this.ctx.closePath();
       }
     }
   }
@@ -72,13 +72,13 @@ export class Window {
     this.ctx.moveTo(xp + 75, yp + 75);
     this.ctx.lineTo(xp + 125, yp + 125);
     this.ctx.stroke();
-    this.ctx.closePath()
+    this.ctx.closePath();
 
     this.ctx.beginPath();
     this.ctx.moveTo(xp + 125, yp + 75);
     this.ctx.lineTo(xp + 75, yp + 125);
     this.ctx.stroke();
-    this.ctx.closePath()
+    this.ctx.closePath();
   }
 
   renderNode(node) {
@@ -89,45 +89,53 @@ export class Window {
           2 * Math.PI);
       this.ctx.fillStyle = COLORS[i];
       this.ctx.fill();
-      this.ctx.closePath()
+      this.ctx.closePath();
     }
 
-    this.renderParentNode(node.parent, node)
+    this.renderParentNode(node.parent, node, true);
   }
 
-  renderParentNode(parent, child) {
+  trailGridPosition(agent, position) {
+    const angle = Math.PI / this.grid.agents * 2 * agent - Math.PI / 4;
+    return [
+      position[0] * 200 + 100 + Math.cos(angle) * 30,
+      position[1] * 200 + 100 + Math.sin(angle) * 30,
+    ];
+  }
+
+  renderParentNode(parent, child, first = false) {
     if (parent === undefined) {
-      return
+      return;
     }
 
     if (!parent.isStandard) {
-      this.renderParentNode(parent.parent, child)
-      return
+      this.renderParentNode(parent.parent, child, first);
+      return;
     }
 
     for (let i = 0; i < this.grid.agents; i++) {
-      const agent = parent.positions[i];
-      const agent_child = child.positions[i];
+      const agent = this.trailGridPosition(i, parent.positions[i]);
+      const agent_child = this.trailGridPosition(i, child.positions[i]);
 
-      if (samePositions(agent, agent_child)) {
+      if (!first && samePositions(agent, agent_child)) {
         this.ctx.beginPath();
-        this.ctx.arc(agent[0] * 200 + 100, agent[1] * 200 + 100, 25, 0, 6.3);
+        this.ctx.arc(agent[0], agent[1], 25, 0, 6.3);
         this.ctx.fillStyle = COLORS[i];
         this.ctx.fill();
-        this.ctx.closePath()
+        this.ctx.closePath();
       } else {
         this.ctx.beginPath();
-        this.ctx.moveTo(agent[0] * 200 + 100, agent[1] * 200 + 100);
-        this.ctx.lineTo(agent_child[0] * 200 + 100, agent_child[1] * 200 + 100);
+        this.ctx.moveTo(agent[0], agent[1]);
+        this.ctx.lineTo(agent_child[0], agent_child[1]);
         this.ctx.lineWidth = 20;
         this.ctx.lineCap = 'round';
         this.ctx.strokeStyle = COLORS[i];
         this.ctx.stroke();
-        this.ctx.closePath()
+        this.ctx.closePath();
       }
     }
 
-    this.renderParentNode(parent.parent, parent)
+    this.renderParentNode(parent.parent, parent);
   }
 
   solve() {
