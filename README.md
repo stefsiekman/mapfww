@@ -1,3 +1,3 @@
 # Multi-agent pathfinding with waypoints
 
-Well, not much to see just yet...
+![](https://dsc.cloud/060138/animation.gif)
