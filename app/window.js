@@ -88,6 +88,7 @@ export class Window {
 
   solve() {
     this.renderNode(this.grid.rootNode());
+    this.grid.rootNode().solve()
   }
 
 }

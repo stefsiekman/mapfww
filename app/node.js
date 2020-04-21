@@ -1,4 +1,5 @@
 import {samePositions} from './util.js';
+import {PriorityQueue} from './priority-queue.js';
 
 export class Node {
 
@@ -13,11 +14,12 @@ export class Node {
     // Make node standard
     if (!this.moves.includes(undefined)) {
       this.moves = Array(this.positions.length).fill(undefined);
+      this.positions = moves;
+      this.taken_egdes = [];
     }
 
     this.post_moves = this.moves.map(
         (e, i) => e !== undefined ? e : this.positions[i]);
-    console.log('post_moves', this.post_moves);
 
     // Sum the heuristic values of the agents
     this.heuristic = this.post_moves.map((e, i) => this.grid.heuristic(i, e)).
@@ -67,6 +69,21 @@ export class Node {
     }
 
     return new_nodes;
+  }
+
+  solve() {
+    const queue = new PriorityQueue((a, b) => a.f <= b.f);
+    queue.enqueue(this);
+
+    while (!queue.empty) {
+      const node = queue.dequeue();
+
+      if (node.allAgentsAtGoal) {
+        return node;
+      }
+
+      node.expand().forEach((n) => queue.enqueue(n));
+    }
   }
 
 }
