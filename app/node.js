@@ -82,6 +82,11 @@ export class Node {
         return node;
       }
 
+      console.log(node, 'Added')
+      node.expand().forEach((node) => {
+        console.log(node.f, node.positions, node.moves)
+      })
+      console.log('\n\n\n')
       node.expand().forEach((n) => queue.enqueue(n));
     }
   }

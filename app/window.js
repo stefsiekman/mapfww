@@ -77,18 +77,33 @@ export class Window {
   }
 
   renderNode(node) {
-    for (const agent of node.positions) {
+    for (let i = 0; i < this.grid.agents; i++) {
+      const agent = node.positions[i];
       this.ctx.beginPath();
       this.ctx.arc(agent[0] * 200 + 100, agent[1] * 200 + 100, 50, 0,
           2 * Math.PI);
-      this.ctx.fillStyle = 'red';
+      this.ctx.fillStyle = COLORS[i];
       this.ctx.fill();
     }
   }
 
   solve() {
-    this.renderNode(this.grid.rootNode());
-    this.grid.rootNode().solve()
+    const goalNode = this.grid.rootNode().solve();
+
+    const nodes = [];
+    let node = goalNode;
+    while (node !== undefined) {
+      nodes.push(node);
+      node = node.parent;
+    }
+    nodes.reverse()
+
+    nodes.forEach((node, index) => {
+      setTimeout(function() {
+        this.render()
+        this.renderNode(node)
+      }.bind(this), index * 250)
+    })
   }
 
 }
