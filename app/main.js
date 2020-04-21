@@ -41,18 +41,6 @@ document.getElementById('example-three').onclick = () => {
   new Window(grid, 100);
 };
 
-document.getElementById('example-narrow-two').onclick = () => {
-  const grid = new Grid(3, 5);
-  grid.addWall(1, 2);
-  grid.addWall(1, 0);
-  grid.addWall(2, 2);
-  grid.addWall(1, 4);
-  grid.addAgent([2, 4], [2, 0]);
-  grid.addAgent([0, 4], [0, 0]);
-
-  new Window(grid, 100);
-};
-
 document.getElementById('example-narrow').onclick = () => {
   const grid = new Grid(5, 5);
   grid.addWall(0, 2);

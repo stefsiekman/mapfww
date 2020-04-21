@@ -36,6 +36,7 @@ button:hover {
     display: grid;
     grid-template-columns: auto 200px;
     grid-column-gap: 20px;
+    grid-row-gap: 20px;
     max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
@@ -112,6 +113,7 @@ button:hover {
     .container {
         grid-template-columns: auto;
     }
+
     .container .title {
         grid-column-start: span 1;
     }
