@@ -35,17 +35,21 @@ def solve_od(grid):
             open_nodes.put(item)
 
 
-def solve_od_id(grid):
-    # Create a separate grid for each agent
-    grids = []
-    for i in range(grid.agents):
-        new_grid = Grid(grid.w, grid.h)
+def solve_od_id(grid, groups=None):
+    if groups is None:
+        groups = [[n] for n in range(grid.agents)]
 
+    # Create a separate grid for each agent group
+    grids = []
+    for group in groups:
+        new_grid = Grid(grid.w, grid.h)
         new_grid.walls = grid.walls
-        new_grid.starts = [grid.starts[i]]
-        new_grid.goals = [grid.goals[i]]
-        new_grid.heuristics = [grid.heuristics[i]]
-        new_grid.agents = 1
+
+        for agent_index in group:
+            new_grid.starts.append(grid.starts[agent_index])
+            new_grid.goals.append(grid.goals[agent_index])
+            new_grid.heuristics.append(grid.heuristics[agent_index])
+            new_grid.agents += 1
 
         grids.append(new_grid)
 
