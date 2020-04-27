@@ -38,6 +38,17 @@ def solve_od(grid):
 
 
 def paths_conflict(paths):
+    """
+    Finds any conflicts in a solution, reports the agents that conflict.
+
+    >>> paths_conflict([[[0, 0], [0, 1]], [[0, 2], [0, 3]], [[1, 1], [1, 2]]])
+
+    >>> paths_conflict([[[0, 0], [0, 1]], [[0, 2], [0, 1]], [[1, 1], [1, 2]]])
+    [0, 1]
+
+    >>> paths_conflict([[[0, 0], [0, 1]], [[1, 2], [1, 1]], [[0, 1], [0, 0]]])
+    [0, 2]
+    """
     step_positions = [
         [tuple(paths[agent][step]) for agent in range(len(paths))]
         for step in range(len(paths[0]))]
@@ -53,15 +64,15 @@ def paths_conflict(paths):
                     shared_position.append(other_agent)
 
             if len(shared_position) > 0:
-                return shared_position
+                return [agent] + shared_position
 
     # Crossing edges require more that one step
     if len(paths[0]) < 2:
         return None
 
     # Crossing edges?
-    for step, positions in enumerate(step_positions[1:]):
-        positions_before = step_positions[step - 1]
+    for step_before, positions in enumerate(step_positions[1:]):
+        positions_before = step_positions[step_before]
         edges = [Edge(p, p_b) for p, p_b in zip(positions, positions_before)]
 
         for agent, edge in enumerate(edges):
@@ -72,8 +83,7 @@ def paths_conflict(paths):
                 if edge.conflicts(other_edge):
                     shared_position.append(other_agent)
             if len(shared_position) > 0:
-                return shared_position
-
+                return [agent] + shared_position
 
 
 def solve_od_id(grid, groups=None):
