@@ -40,8 +40,13 @@ def solve_od_id(grid):
     grids = []
     for i in range(grid.agents):
         new_grid = Grid(grid.w, grid.h)
-        new_grid.walls = [row[:] for row in grid.walls]
-        new_grid.add_agent(grid.starts[i], grid.goals[i])
+
+        new_grid.walls = grid.walls
+        new_grid.starts = [grid.starts[i]]
+        new_grid.goals = [grid.goals[i]]
+        new_grid.heuristics = [grid.heuristics[i]]
+        new_grid.agents = 1
+
         grids.append(new_grid)
 
     solution = [solve_od(g)[0] for g in grids]
