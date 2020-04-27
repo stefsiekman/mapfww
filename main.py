@@ -3,7 +3,7 @@ import json
 from time import time
 
 from grid import Grid
-from solver import solve_od
+from solver import solve_od, solve_od_id
 
 URL = "https://mapfw.nl/"
 headers = {
@@ -13,7 +13,7 @@ headers = {
 
 def load_problem(benchmark=1):
     data = {
-        "algorithm": "A*+OD",
+        "algorithm": "A*+OD+ID",
         "version": "testing"
     }
     r = requests.post(f"{URL}api/benchmarks/{benchmark}/problems",
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     print("Solving...")
 
     start_time = time()
-    solution = solve_od(grid)
+    solution = solve_od_id(grid)
     time_taken = round((time() - start_time) * 1000)
 
     print(f"Done in {time_taken}ms")

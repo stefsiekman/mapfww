@@ -1,5 +1,6 @@
 from queue import PriorityQueue
 
+from grid import Grid
 from node import Node
 
 
@@ -34,5 +35,22 @@ def solve_od(grid):
             open_nodes.put(item)
 
 
-def solve_od_if(grid):
-    return solve_od(grid)
+def solve_od_id(grid):
+    # Create a separate grid for each agent
+    grids = []
+    for i in range(grid.agents):
+        new_grid = Grid(grid.w, grid.h)
+        new_grid.walls = [row[:] for row in grid.walls]
+        new_grid.add_agent(grid.starts[i], grid.goals[i])
+        grids.append(new_grid)
+
+    solution = [solve_od(g)[0] for g in grids]
+
+    # Pad with positions at goal
+    steps = max(len(l) for l in solution)
+    for positions in solution:
+        last = positions[-1]
+        for _ in range(steps - len(positions)):
+            positions.append(last)
+
+    return solution
