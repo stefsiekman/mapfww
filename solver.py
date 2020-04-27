@@ -1,6 +1,7 @@
 import itertools
 from queue import PriorityQueue
 
+from edge import Edge
 from grid import Grid
 from node import Node
 
@@ -36,15 +37,43 @@ def solve_od(grid):
             open_nodes.put(item)
 
 
-be = False
-
-
 def paths_conflict(paths):
-    global be
-    if not be:
-        be = True
-        return [1, 2]
-    return None
+    step_positions = [
+        [tuple(paths[agent][step]) for agent in range(len(paths))]
+        for step in range(len(paths[0]))]
+
+    # Any shared positions?
+    for step, positions in enumerate(step_positions):
+        for agent, position in enumerate(positions):
+            shared_position = []
+            for other_agent, other_position in enumerate(positions):
+                if other_agent == agent:
+                    continue
+                if position == other_position:
+                    shared_position.append(other_agent)
+
+            if len(shared_position) > 0:
+                return shared_position
+
+    # Crossing edges require more that one step
+    if len(paths[0]) < 2:
+        return None
+
+    # Crossing edges?
+    for step, positions in enumerate(step_positions[1:]):
+        positions_before = step_positions[step - 1]
+        edges = [Edge(p, p_b) for p, p_b in zip(positions, positions_before)]
+
+        for agent, edge in enumerate(edges):
+            shared_position = []
+            for other_agent, other_edge in enumerate(edges):
+                if other_agent == agent:
+                    continue
+                if edge.conflicts(other_edge):
+                    shared_position.append(other_agent)
+            if len(shared_position) > 0:
+                return shared_position
+
 
 
 def solve_od_id(grid, groups=None):
