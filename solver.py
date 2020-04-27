@@ -1,3 +1,4 @@
+import itertools
 from queue import PriorityQueue
 
 from grid import Grid
@@ -35,6 +36,17 @@ def solve_od(grid):
             open_nodes.put(item)
 
 
+be = False
+
+
+def paths_conflict(paths):
+    global be
+    if not be:
+        be = True
+        return [1, 2]
+    return None
+
+
 def solve_od_id(grid, groups=None):
     if groups is None:
         groups = [[n] for n in range(grid.agents)]
@@ -53,7 +65,12 @@ def solve_od_id(grid, groups=None):
 
         grids.append(new_grid)
 
-    solution = [solve_od(g)[0] for g in grids]
+    # Convert the groups paths to a solution
+    solution = [None] * grid.agents
+    for group, group_grid in zip(groups, grids):
+        position_lists = solve_od(group_grid)
+        for agent_index, position_list in zip(group, position_lists):
+            solution[agent_index] = position_list
 
     # Pad with positions at goal
     steps = max(len(l) for l in solution)
@@ -61,5 +78,20 @@ def solve_od_id(grid, groups=None):
         last = positions[-1]
         for _ in range(steps - len(positions)):
             positions.append(last)
+
+    # Solve again if there are conflicts
+    conflicts = paths_conflict(solution)
+    if conflicts is not None:
+        conflict_group = []
+
+        new_groups = []
+        for group in groups:
+            if any(c in group for c in conflicts):
+                conflict_group.extend(group)
+            else:
+                new_groups.append(group)
+
+        new_groups.append(conflict_group)
+        return solve_od_id(grid, new_groups)
 
     return solution
