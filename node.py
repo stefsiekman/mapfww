@@ -30,8 +30,13 @@ class Node:
 
     def expand(self):
         agent = self.moves.index(None)
-
         position = self.positions[agent]
+
+        if self.grid.goals[agent] == position:
+            new_moves = self.moves[:]
+            new_moves[agent] = position
+            return [Node(self.grid, self.positions, new_moves, self.cost,
+                         self.taken_edges, self)]
 
         new_nodes = []
 
@@ -60,7 +65,7 @@ class Node:
 
     def all_done(self):
         return all(pos == goal
-                   for pos, goal in zip(self.post_moves, self.grid.goals))
+                   for pos, goal in zip(self.positions, self.grid.goals))
 
     def pretty_print(self):
         vertical_border = "+" + ("-" * (self.grid.w)) + "+"

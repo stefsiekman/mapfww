@@ -1,93 +1,87 @@
-from queue import PriorityQueue, Queue
+import requests
+import json
+from time import time
 
-import imageio as imageio
+from queue import PriorityQueue, Queue
 
 from grid import Grid
 from node import Node
 
-from PIL import Image
+URL = "https://mapfw.nl/"
+headers = {
+    'X-API-Token': 'secret123'
+}
 
 
-def save_image(node, filename):
-    pixels = [(255, 255, 255)] * (node.grid.w * node.grid.h)
+def load_problem(benchmark=1):
+    data = {
+        "algorithm": "CBS",
+        "version": "0"
+    }
+    r = requests.post(f"{URL}api/benchmarks/{benchmark}/problems",
+                      headers=headers, json=data)
 
-    for y in range(node.grid.h):
-        for x in range(node.grid.w):
-            if node.grid.walls[y][x]:
-                pixels[x + y * node.grid.w] = (0, 0, 0)
-            elif (x, y) == node.positions[0]:
-                pixels[x + y * node.grid.w] = (0, 0, 255)
-            elif (x, y) == node.positions[1]:
-                pixels[x + y * node.grid.w] = (128, 128, 255)
-            elif (x, y) == node.grid.starts[0]:
-                pixels[x + y * node.grid.w] = (0, 255, 0)
-            elif (x, y) == node.grid.starts[1]:
-                pixels[x + y * node.grid.w] = (128, 255, 128)
-            elif (x, y) == node.grid.goals[0]:
-                pixels[x + y * node.grid.w] = (255, 0, 0)
-            elif (x, y) == node.grid.goals[1]:
-                pixels[x + y * node.grid.w] = (255, 128, 128)
+    problem_id = r.json()["problems"][0]["id"]
+    problem = json.loads(r.json()["problems"][0]["problem"])
+    attempt_id = r.json()["attempt"]
 
-    img = Image.new("RGB", (node.grid.w, node.grid.h))
-    img.putdata(pixels)
-    re_img = img.resize((node.grid.w * 100, node.grid.h * 100), Image.NEAREST)
-    re_img.save(filename)
+    problem["width"] = int(problem["width"])
+    problem["height"] = int(problem["height"])
+
+    return attempt_id, problem_id, problem
 
 
-def print_result(final_node: Node):
-    stack = []
-    current_node = final_node
-    while current_node is not None:
-        stack.append(current_node)
-        current_node = current_node.parent
-
-    index = 0
-    filenames = []
-    while len(stack) > 0:
-        print_node = stack.pop()
-        if not print_node.is_standard():
-            continue
-
-        index += 1
-        filename = f"img/step-{index}.png"
-        filenames.append(filename)
-        save_image(print_node, filename)
-
-    with imageio.get_writer("img/animation.gif", mode='I', duration=0.5) as writer:
-        for filename in filenames:
-            image = imageio.imread(filename)
-            writer.append_data(image)
+def post_solution(attempt_id, problem_id, time, solution):
+    data = {
+        "solutions": [
+            {
+                "problem": problem_id,
+                "time": time,
+                "solution": solution
+            }
+        ]
+    }
+    requests.post(f"{URL}api/attempts/{attempt_id}/solutions",
+                  headers=headers, json=data)
+    print("Submitted response:", problem_id)
 
 
 if __name__ == "__main__":
-    print("Creating grid...")
-    grid = Grid(5, 3)
-    grid.add_wall(0, 1)
-    grid.add_wall(1, 1)
-    grid.add_wall(3, 1)
-    grid.add_wall(4, 1)
+    attempt_id, problem_id, problem = load_problem()
+    start_time = time()
+
+    print(f"Creating grid of {problem['width']}x{problem['height']}...")
+    grid = Grid(problem["width"], problem["height"])
+
+    print("Adding walls...")
+    walls = 0
+    for y in range(problem["height"]):
+        for x in range(problem["width"]):
+            if problem["grid"][y][x] == 1:
+                grid.add_wall(x, y)
+                walls += 1
+    print(f"    added {walls} walls")
 
     print("Adding agents...")
-    grid.add_agent((0, 0), (0, 2))
-    grid.add_agent((4, 2), (4, 0))
+    for start, goal in zip(problem["starts"], problem["goals"]):
+        print(f"    from {start}  \tto {goal}")
+        grid.add_agent(tuple(start), tuple(goal))
 
     print()
     print("Solving...")
 
     open_nodes = PriorityQueue()
     node_id = 0
-    open_nodes.put(
-        (0, node_id, Node(grid, [(0, 0), (4, 2)], [None, None], 0, [])))
+    open_nodes.put((0, node_id, grid.root_node()))
     node_id += 1
+
+    final_node: Node = None
 
     while not open_nodes.empty():
         f, id, node = open_nodes.get()
 
         if node.all_done():
-            print("Done")
-            print(f"Used {node_id} nodes")
-            print_result(node)
-            print("Saved images")
+            final_node = node
             break
 
         for new_node in node.expand():
@@ -95,3 +89,19 @@ if __name__ == "__main__":
             item = (new_node.f, node_id, new_node)
             node_id += 1
             open_nodes.put(item)
+
+    time_taken = round((time() - start_time) * 1000)
+    print(f"Done in {time_taken}ms, with {node_id} nodes")
+
+    positions = []
+    while final_node is not None:
+        if final_node.is_standard():
+            positions.append([list(p) for p in final_node.positions])
+        final_node = final_node.parent
+
+    positions.reverse()
+
+    solution = [[positions[t][i] for t in range(len(positions))]
+                for i in range(grid.agents)]
+
+    post_solution(attempt_id, problem_id, time_taken, solution)

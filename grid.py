@@ -1,5 +1,7 @@
 from queue import Queue
 
+from node import Node
+
 
 class Grid:
 
@@ -26,8 +28,10 @@ class Grid:
         self.goals.append(goal)
 
         agent_heuristics = self.backtrack_heuristics(goal)
-        print(agent_heuristics)
         self.heuristics.append(agent_heuristics)
+
+    def root_node(self):
+        return Node(self, self.starts[:], [None] * self.agents, 0, [])
 
     def valid_neighbours(self, position):
         """
