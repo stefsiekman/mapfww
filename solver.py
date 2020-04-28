@@ -25,8 +25,14 @@ def solve_od(grid):
     open_nodes.put((0, node_id, grid.root_node()))
     node_id += 1
 
+    max_cost = 0
+
     while not open_nodes.empty():
         f, id, node = open_nodes.get()
+
+        if node.cost > max_cost:
+            max_cost = node.cost
+            print(f"\rMax cost: {max_cost}", end="")
 
         if node.all_done():
             return create_solution(grid, node)
@@ -90,6 +96,11 @@ def solve_od_id(grid, groups=None):
     if groups is None:
         groups = [[n] for n in range(grid.agents)]
 
+    print("\nSolving with groups:")
+    for g in groups:
+        print(f"    {g}")
+    print()
+
     # Create a separate grid for each agent group
     grids = []
     for group in groups:
@@ -122,6 +133,13 @@ def solve_od_id(grid, groups=None):
     # Solve again if there are conflicts
     conflicts = paths_conflict(solution)
     if conflicts is not None:
+        if len(groups) == 1:
+            print("\nNo valid solution could be found")
+            print("Last solution:")
+            for s in solution:
+                print(f"    {s}")
+            return solution
+
         conflict_group = []
 
         new_groups = []

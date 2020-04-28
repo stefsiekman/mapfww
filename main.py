@@ -45,7 +45,7 @@ def post_solution(attempt_id, problem_id, time, solution):
 
 
 if __name__ == "__main__":
-    attempt_id, problem_id, problem = load_problem()
+    attempt_id, problem_id, problem = load_problem(4)
 
     print(f"Creating grid of {problem['width']}x{problem['height']}...")
     grid = Grid(problem["width"], problem["height"])
@@ -61,8 +61,9 @@ if __name__ == "__main__":
         grid.add_agent(tuple(start), tuple(goal))
 
     print("Adding waypoints...")
-    # grid.add_waypoint(0, 16, 10)
-    grid.add_waypoint(0, 11, 2)
+    for agent, waypoints in enumerate(problem["waypoints"]):
+        for waypoint in waypoints:
+            grid.add_waypoint(agent, waypoint[0], waypoint[1])
 
     print()
     print("Solving...")
