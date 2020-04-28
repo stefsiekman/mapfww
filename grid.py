@@ -109,12 +109,15 @@ class Grid:
         return heuristics
 
     def heuristic(self, agent, position, visited_waypoints):
+        x = position[0]
+        y = position[1]
+
         # All waypoints visited? Go to goal
         if len(visited_waypoints) == 1 or len(self.waypoints[agent]) == 0:
-            return self.goal_heuristics[agent][position[1]][position[0]]
+            return self.goal_heuristics[agent][y][x]
 
         # Heuristic to the first waypoint
-        return self.waypoints[agent][0].heuristic(position[0], position[1])
+        return self.waypoints[agent][0].heuristic(x, y)
 
     def on_waypoint(self, agent, position):
         for index, waypoint in enumerate(self.waypoints[agent]):

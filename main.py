@@ -14,7 +14,7 @@ headers = {
 def load_problem(benchmark=1):
     data = {
         "algorithm": "A*+OD+ID",
-        "version": "testing"
+        "version": "single waypoint"
     }
     r = requests.post(f"{URL}api/benchmarks/{benchmark}/problems",
                       headers=headers, json=data)
@@ -61,7 +61,8 @@ if __name__ == "__main__":
         grid.add_agent(tuple(start), tuple(goal))
 
     print("Adding waypoints...")
-    grid.add_waypoint(0, 10, 2)
+    # grid.add_waypoint(0, 16, 10)
+    grid.add_waypoint(0, 11, 2)
 
     print()
     print("Solving...")

@@ -39,7 +39,7 @@ class Node:
         agent = self.moves.index(None)
         position = self.positions[agent]
 
-        if self.grid.goals[agent] == position:
+        if self.agent_done(agent):
             new_moves = self.moves[:]
             new_moves[agent] = position
             return [Node(self.grid, self.positions, new_moves, self.cost,
@@ -66,6 +66,7 @@ class Node:
             new_visited_waypoints = self.visited_waypoints
             on_waypoint = self.grid.on_waypoint(agent, neighbour)
             if on_waypoint is not None:
+                new_visited_waypoints = [ws[:] for ws in new_visited_waypoints]
                 new_visited_waypoints[agent].append(on_waypoint)
 
             new_node = Node(self.grid, self.positions, new_moves,
@@ -80,7 +81,12 @@ class Node:
 
     def all_done(self):
         return all(pos == goal
-                   for pos, goal in zip(self.positions, self.grid.goals))
+                   for pos, goal in zip(self.positions, self.grid.goals)) and all(all(waypoint_index in self.visited_waypoints[agent] for waypoint_index in range(len(self.grid.waypoints[agent]))) for agent in range(self.grid.agents))
+        return all(self.agent_done(agent) for agent in range(self.grid.agents))
+
+    def agent_done(self, agent):
+        return self.positions[agent] == self.grid.goals[agent] and \
+               len(self.visited_waypoints[agent]) == self.grid.waypoints[agent]
 
     def pretty_print(self):
         vertical_border = "+" + ("-" * (self.grid.w)) + "+"
