@@ -81,8 +81,11 @@ class Node:
 
     def all_done(self):
         return all(pos == goal
-                   for pos, goal in zip(self.positions, self.grid.goals)) and all(all(waypoint_index in self.visited_waypoints[agent] for waypoint_index in range(len(self.grid.waypoints[agent]))) for agent in range(self.grid.agents))
-        return all(self.agent_done(agent) for agent in range(self.grid.agents))
+                   for pos, goal in zip(self.positions, self.grid.goals)) and \
+               all(all(waypoint_index in self.visited_waypoints[agent]
+                       for waypoint_index in
+                       range(len(self.grid.waypoints[agent])))
+                   for agent in range(self.grid.agents))
 
     def agent_done(self, agent):
         return self.positions[agent] == self.grid.goals[agent] and \
