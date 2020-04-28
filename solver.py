@@ -99,7 +99,8 @@ def solve_od_id(grid, groups=None):
         for agent_index in group:
             new_grid.starts.append(grid.starts[agent_index])
             new_grid.goals.append(grid.goals[agent_index])
-            new_grid.heuristics.append(grid.heuristics[agent_index])
+            new_grid.goal_heuristics.append(grid.goal_heuristics[agent_index])
+            new_grid.waypoints.append(grid.waypoints[agent_index])
             new_grid.agents += 1
 
         grids.append(new_grid)

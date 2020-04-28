@@ -3,13 +3,19 @@ from edge import Edge
 
 class Node:
 
-    def __init__(self, grid, positions, moves, cost, taken_edges, parent=None):
+    def __init__(self, grid, positions, moves, cost, taken_edges, parent=None,
+                 visited_waypoints=None):
         self.grid = grid
         self.positions = positions
         self.moves = moves
         self.cost = cost
         self.taken_edges = taken_edges
         self.parent = parent
+
+        # Copy or create waypoints list
+        self.visited_waypoints = visited_waypoints
+        if self.visited_waypoints is None:
+            self.visited_waypoints = [[] for _ in range(grid.agents)]
 
         # Make node standard
         if None not in moves:
@@ -20,7 +26,8 @@ class Node:
         self.post_moves = [move if move is not None else pos
                            for pos, move in zip(self.positions, self.moves)]
 
-        self.heuristic = sum(grid.heuristic(agent, self.post_moves[agent])
+        self.heuristic = sum(grid.heuristic(agent, self.post_moves[agent],
+                                            self.visited_waypoints[agent])
                              for agent in range(len(positions)))
 
         self.f = self.cost + self.heuristic
@@ -36,7 +43,7 @@ class Node:
             new_moves = self.moves[:]
             new_moves[agent] = position
             return [Node(self.grid, self.positions, new_moves, self.cost,
-                         self.taken_edges, self)]
+                         self.taken_edges, self, self.visited_waypoints)]
 
         new_nodes = []
 
@@ -54,8 +61,16 @@ class Node:
             new_moves[agent] = neighbour
             new_taken_edges = self.taken_edges[:]
             new_taken_edges.append(move_edge)
+
+            # Check if this means a new waypoint is now visited for this agent
+            new_visited_waypoints = self.visited_waypoints
+            on_waypoint = self.grid.on_waypoint(agent, neighbour)
+            if on_waypoint is not None:
+                new_visited_waypoints[agent].append(on_waypoint)
+
             new_node = Node(self.grid, self.positions, new_moves,
-                            self.cost + 1, new_taken_edges, self)
+                            self.cost + 1, new_taken_edges, self,
+                            new_visited_waypoints)
             new_nodes.append(new_node)
 
         return new_nodes

@@ -60,6 +60,9 @@ if __name__ == "__main__":
     for start, goal in zip(problem["starts"], problem["goals"]):
         grid.add_agent(tuple(start), tuple(goal))
 
+    print("Adding waypoints...")
+    grid.add_waypoint(0, 10, 2)
+
     print()
     print("Solving...")
 
