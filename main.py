@@ -7,7 +7,6 @@ from solver import solve_od, solve_od_id
 
 from Client_library import MapfwBenchmarker
 
-
 if __name__ == "__main__":
     benchmark = MapfwBenchmarker("secret123", 3, "A*+OD+ID", "lib test")
 
@@ -15,6 +14,7 @@ if __name__ == "__main__":
         print(f"Creating grid of {problem.width}x{problem.height}...")
         grid = Grid(problem.width, problem.height)
 
+        parse_start_time = time()
         print("Adding walls...")
         print(problem.grid)
         for y in range(problem.height):
@@ -32,6 +32,9 @@ if __name__ == "__main__":
             for waypoint in waypoints:
                 grid.add_waypoint(agent, waypoint[0], waypoint[1])
 
+        print(f"\nParsing done in "
+              f"{round((time() - parse_start_time) * 1000, 2)} ms")
+
         print()
         print("Solving...")
 
@@ -42,4 +45,3 @@ if __name__ == "__main__":
         print(f"Done in {time_taken}ms")
 
         problem.add_solution(solution)
-
