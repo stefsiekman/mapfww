@@ -30,9 +30,9 @@ def solve_od(grid):
     while not open_nodes.empty():
         f, id, node = open_nodes.get()
 
-        if node.cost > max_cost:
-            max_cost = node.cost
-            print(f"\rMax cost: {max_cost}", end="")
+        # if node.cost > max_cost:
+        #     max_cost = node.cost
+            # print(f"\rMax cost: {max_cost}", end="")
 
         if node.all_done():
             return create_solution(grid, node)

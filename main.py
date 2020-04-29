@@ -14,7 +14,7 @@ headers = {
 def load_problem(benchmark=1):
     data = {
         "algorithm": "A*+OD+ID",
-        "version": "single waypoint"
+        "version": "single waypoint, no-print"
     }
     r = requests.post(f"{URL}api/benchmarks/{benchmark}/problems",
                       headers=headers, json=data)
@@ -45,7 +45,7 @@ def post_solution(attempt_id, problem_id, time, solution):
 
 
 if __name__ == "__main__":
-    attempt_id, problem_id, problem = load_problem(4)
+    attempt_id, problem_id, problem = load_problem(3)
 
     print(f"Creating grid of {problem['width']}x{problem['height']}...")
     grid = Grid(problem["width"], problem["height"])
