@@ -3,7 +3,6 @@ from queue import PriorityQueue
 
 from edge import Edge
 from grid import Grid
-from node import Node
 
 
 def create_solution(grid, node):
@@ -30,17 +29,29 @@ def solve_od(grid):
     while not open_nodes.empty():
         f, id, node = open_nodes.get()
 
+        # print(f"==> At node #{id} (h = {node.heuristic}, g = {node.cost})")
+        # for agent in range(node.grid.agents):
+        #     print(f"Agent {agent} is at {node.positions[agent]}")
+        #     print(f"        visited {node.visited_waypoints[agent]} ")
+
         # if node.cost > max_cost:
         #     max_cost = node.cost
-            # print(f"\rMax cost: {max_cost}", end="")
+        #     print(f"\rMax cost: {max_cost}, queue length: {node_id}", end="")
 
         if node.all_done():
             return create_solution(grid, node)
 
         for new_node in node.expand():
             item = (new_node.f, node_id, new_node)
+
+            # print(f"    + #{node_id} h = {new_node.heuristic}, "
+            #       f"g = {new_node.cost}")
+
             node_id += 1
             open_nodes.put(item)
+
+        # if node_id > 100:
+        #     exit()
 
 
 def paths_conflict(paths):
@@ -96,10 +107,8 @@ def solve_od_id(grid, groups=None):
     if groups is None:
         groups = [[n] for n in range(grid.agents)]
 
-    print("\nSolving with groups:")
-    for g in groups:
-        print(f"    {g}")
-    print()
+    groups_string = ", ".join([str(g) for g in groups])
+    print(f"\nSolving with groups: {groups_string}")
 
     # Create a separate grid for each agent group
     grids = []
@@ -110,7 +119,6 @@ def solve_od_id(grid, groups=None):
         for agent_index in group:
             new_grid.starts.append(grid.starts[agent_index])
             new_grid.goals.append(grid.goals[agent_index])
-            new_grid.goal_heuristics.append(grid.goal_heuristics[agent_index])
             new_grid.waypoints.append(grid.waypoints[agent_index])
             new_grid.agents += 1
 

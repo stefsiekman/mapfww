@@ -1,3 +1,5 @@
+from typing import Set, Tuple
+
 from edge import Edge
 
 
@@ -13,9 +15,9 @@ class Node:
         self.parent = parent
 
         # Copy or create waypoints list
-        self.visited_waypoints = visited_waypoints
+        self.visited_waypoints: Set[Tuple[int, int]] = visited_waypoints
         if self.visited_waypoints is None:
-            self.visited_waypoints = [[] for _ in range(grid.agents)]
+            self.visited_waypoints = [set() for _ in range(grid.agents)]
 
         # Make node standard
         if None not in moves:
@@ -30,7 +32,7 @@ class Node:
                                             self.visited_waypoints[agent])
                              for agent in range(len(positions)))
 
-        self.f = self.cost + self.heuristic
+        self.f = self.cost + self.heuristic * 1.000001
 
     def augmented(self):
         pass
@@ -64,10 +66,9 @@ class Node:
 
             # Check if this means a new waypoint is now visited for this agent
             new_visited_waypoints = self.visited_waypoints
-            on_waypoint = self.grid.on_waypoint(agent, neighbour)
-            if on_waypoint is not None:
-                new_visited_waypoints = [ws[:] for ws in new_visited_waypoints]
-                new_visited_waypoints[agent].append(on_waypoint)
+            if self.grid.on_waypoint(agent, neighbour):
+                new_visited_waypoints = [ws.copy() for ws in new_visited_waypoints]
+                new_visited_waypoints[agent].add(neighbour)
 
             new_node = Node(self.grid, self.positions, new_moves,
                             self.cost + 1, new_taken_edges, self,
@@ -83,7 +84,9 @@ class Node:
         return all(self.agent_done(agent) for agent in range(self.grid.agents))
 
     def agent_done(self, agent):
-        return self.positions[agent] == self.grid.goals[agent] and all(wi in self.visited_waypoints[agent] for wi in range(len(self.grid.waypoints[agent])))
+        return self.positions[agent] == self.grid.goals[agent] and \
+               self.grid.waypoints[agent].are_all(
+                   self.visited_waypoints[agent])
 
     def pretty_print(self):
         vertical_border = "+" + ("-" * (self.grid.w)) + "+"

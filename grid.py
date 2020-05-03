@@ -2,7 +2,7 @@ from queue import Queue
 from typing import List
 
 from node import Node
-from waypoint import Waypoint
+from waypoint_map import WaypointMap
 
 
 class Grid:
@@ -15,8 +15,7 @@ class Grid:
         self.agents = 0
         self.starts = []
         self.goals = []
-        self.waypoints: List[List[Waypoint]] = []
-        self.goal_heuristics = []
+        self.waypoints: List[WaypointMap] = []
 
     def add_wall(self, x, y):
         assert self.agents == 0, "Add agents after all walls are added"
@@ -29,13 +28,10 @@ class Grid:
         self.agents += 1
         self.starts.append(start)
         self.goals.append(goal)
-        self.waypoints.append([])
-
-        agent_heuristics = self.backtrack_heuristics(goal)
-        self.goal_heuristics.append(agent_heuristics)
+        self.waypoints.append(WaypointMap(self, goal))
 
     def add_waypoint(self, agent, x, y):
-        self.waypoints[agent].append(Waypoint(self, agent, x, y))
+        self.waypoints[agent].add_waypoint(x, y)
 
     def root_node(self):
         return Node(self, self.starts[:], [None] * self.agents, 0, [])
@@ -109,19 +105,24 @@ class Grid:
         return heuristics
 
     def heuristic(self, agent, position, visited_waypoints):
-        x = position[0]
-        y = position[1]
-
-        # All waypoints visited? Go to goal
-        if len(visited_waypoints) == 1 or len(self.waypoints[agent]) == 0:
-            return self.goal_heuristics[agent][y][x]
-
-        # Heuristic to the first waypoint
-        return self.waypoints[agent][0].heuristic(x, y)
+        return self.waypoints[agent].heuristic(position, visited_waypoints)
 
     def on_waypoint(self, agent, position):
-        for index, waypoint in enumerate(self.waypoints[agent]):
-            if waypoint.position() == position:
-                return index
+        return self.waypoints[agent].is_waypoint(position)
 
-        return None
+    def pretty_print(self):
+        for y, row in enumerate(self.walls):
+            for x, tile in enumerate(row):
+                char = "."
+                if tile:
+                    char = "#"
+                if (x, y) in self.goals:
+                    char = "X"
+                if (x, y) in self.starts:
+                    char = "O"
+                if any((x, y) in [tuple(w) for w in
+                                  self.waypoints[agent].waypoints]
+                       for agent in range(self.agents)):
+                    char = "@"
+                print(char, end="")
+            print()
