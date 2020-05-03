@@ -32,7 +32,7 @@ class Node:
                                             self.visited_waypoints[agent])
                              for agent in range(len(positions)))
 
-        self.f = self.cost + self.heuristic * 1.000001
+        self.f = self.cost + self.heuristic
 
     def augmented(self):
         pass

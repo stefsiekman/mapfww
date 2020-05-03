@@ -21,13 +21,13 @@ def create_solution(grid, node):
 def solve_od(grid):
     open_nodes = PriorityQueue()
     node_id = 0
-    open_nodes.put((0, node_id, grid.root_node()))
+    open_nodes.put((0, 0, node_id, grid.root_node()))
     node_id += 1
 
     max_cost = 0
 
     while not open_nodes.empty():
-        f, id, node = open_nodes.get()
+        f, h, id, node = open_nodes.get()
 
         # print(f"==> At node #{id} (h = {node.heuristic}, g = {node.cost})")
         # for agent in range(node.grid.agents):
@@ -42,7 +42,7 @@ def solve_od(grid):
             return create_solution(grid, node)
 
         for new_node in node.expand():
-            item = (new_node.f, node_id, new_node)
+            item = (new_node.f, new_node.heuristic, node_id, new_node)
 
             # print(f"    + #{node_id} h = {new_node.heuristic}, "
             #       f"g = {new_node.cost}")
@@ -140,7 +140,7 @@ def solve_od_id(grid, groups=None):
 
     # Solve again if there are conflicts
     conflicts = paths_conflict(solution)
-    if conflicts is not None:
+    if conflicts is not None and len(groups) > 2:
         if len(groups) == 1:
             print("\nNo valid solution could be found")
             print("Last solution:")

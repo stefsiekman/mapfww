@@ -6,7 +6,7 @@ from grid import Grid
 from solver import solve_od_id
 
 if __name__ == "__main__":
-    benchmark = MapfwBenchmarker("secret123", 12,
+    benchmark = MapfwBenchmarker("secret123", 13,
                                  "A*+OD+ID", "mult. waypoints, prio")
 
     for problem in benchmark:
@@ -28,7 +28,6 @@ if __name__ == "__main__":
         for agent, waypoints in enumerate(problem.waypoints):
             for waypoint in waypoints:
                 grid.add_waypoint(agent, waypoint[0], waypoint[1])
-                break
 
         grid.pretty_print()
 
