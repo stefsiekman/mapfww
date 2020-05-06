@@ -7,7 +7,7 @@ from solver import solve_od_id
 
 if __name__ == "__main__":
     benchmark = MapfwBenchmarker("secret123", 13,
-                                 "A*+OD+ID", "mult. waypoints, prio")
+                                 "A*+OD+ID", "illegal moves")
 
     for problem in benchmark:
         print(f"Creating grid of {problem.width}x{problem.height}...")

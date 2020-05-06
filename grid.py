@@ -110,6 +110,24 @@ class Grid:
     def on_waypoint(self, agent, position):
         return self.waypoints[agent].is_waypoint(position)
 
+    def copy(self, agents):
+        """
+        Create a copy of this grid with just the information for a set of
+        agents.
+        :param agents: List[int] agents of which to include the information
+        """
+
+        new_grid = Grid(self.w, self.h)
+        new_grid.walls = self.walls
+
+        for agent_index in agents:
+            new_grid.starts.append(self.starts[agent_index])
+            new_grid.goals.append(self.goals[agent_index])
+            new_grid.waypoints.append(self.waypoints[agent_index])
+            new_grid.agents += 1
+
+        return new_grid
+
     def pretty_print(self):
         for y, row in enumerate(self.walls):
             for x, tile in enumerate(row):
