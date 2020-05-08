@@ -25,6 +25,10 @@ class Path:
     def __getitem__(self, item):
         return self.positions[item]
 
+    def __iter__(self):
+        for pos in self.positions:
+            yield pos
+
     def pad_to(self, length: int):
         """
         Fill the path with the last position until it has a certain length.

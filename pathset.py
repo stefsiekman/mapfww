@@ -71,6 +71,9 @@ class PathSet:
         for t in range(len(self)):
             yield [path[t] for path in self.paths]
 
+    def to_json(self):
+        return [list(path) for path in self.paths]
+
     @staticmethod
     def merge(solutions: List[Tuple[PathSet, List[int]]]) -> PathSet:
         """

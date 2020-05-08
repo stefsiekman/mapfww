@@ -6,7 +6,7 @@ from grid import Grid
 from solver import solve_od_id
 
 if __name__ == "__main__":
-    benchmark = MapfwBenchmarker("secret123", 13,
+    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 12,
                                  "A*+OD+ID", "illegal moves")
 
     for problem in benchmark:
@@ -43,4 +43,6 @@ if __name__ == "__main__":
 
         print(f"Done in {time_taken}ms")
 
-        problem.add_solution(solution)
+        print(solution.to_json())
+
+        problem.add_solution(solution.to_json())
