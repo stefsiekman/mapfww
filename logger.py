@@ -6,7 +6,7 @@ file = None
 def start():
     global file
 
-    time = strftime("%Y%m%d_%H%m%S")
+    time = strftime("%Y%m%d_%H%M%S")
     file = open(f"logs/log_{time}.txt", "w")
 
 

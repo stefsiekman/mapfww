@@ -94,8 +94,10 @@ def solve_od_id(grid) -> PathSet:
     groups = [Group([n], grid) for n in range(grid.agents)]
 
     # Plan a path for each group
+    logger.info("Planning path for each agent...")
     for group in groups:
         group.solve_with(solve_od)
+    logger.info(" ... done")
 
     # TODO: fill conflict avoidance table with every path
 
@@ -103,15 +105,20 @@ def solve_od_id(grid) -> PathSet:
     while True:
         # Simulate execution of all paths until a conflict between two groups
         # G1 and G2 occurs
+        logger.info("Simulating for conflicts ... ", "")
         conflicts = Group.conflicting(groups)
         if conflicts is None:
+            logger.info("none")
             break
         group_a, group_b = conflicts
         group_combo_hash = (group_a.hash(), group_b.hash())
         resolved_conflict = False
+        logger.info(f"between {group_combo_hash}")
 
         # if these two groups have not conflicted before
         if group_combo_hash not in solved_group_conflicts:
+            solved_group_conflicts.add(group_combo_hash)
+
             # fill illegal move table with the current paths for G2
             # find another set of paths with the same cost for G1
             resolved_conflict |= group_a.find_non_conflicting_alt(solve_od,
