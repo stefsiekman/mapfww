@@ -1,3 +1,4 @@
+from itertools import permutations
 from typing import Tuple, Set, Optional
 
 
@@ -13,19 +14,31 @@ class WaypointMap:
         self.waypoints.add((x, y))
         self.distance_maps[(x, y)] = self.grid.backtrack_heuristics((x, y))
 
-    def heuristic(self, position, goal_waypoint: Optional[Tuple[int, int]]):
-        x, y = position
-        dist_to_goal = self.goal_heuristics[y][x]
-        dist_to_waypoint = 0
+    def heuristic(self, position, visited_waypoints: Set[Tuple[int, int]]):
+        """
+        Calculate the heuristic for an agent, given a current position and
+        a set of waypoints that have already been visited.
+        """
 
-        # Distance to waypoint can only be if not all have been visited
-        waypoint = goal_waypoint
-        if waypoint is not None:
-            wpx, wpy = waypoint
-            dist_to_waypoint = self.distance_maps[waypoint][y][x]
-            dist_to_goal = self.goal_heuristics[wpy][wpx]
+        smallest_distance = None
+        for order in permutations(self.waypoints - visited_waypoints):
+            last_waypoint = position
+            order_distance = 0
 
-        return dist_to_goal + dist_to_waypoint
+            for waypoint in order:
+                lx, ly = last_waypoint
+                assert waypoint in self.distance_maps, \
+                    f"{waypoint} should be in distance maps"
+                order_distance += self.distance_maps[waypoint][ly][lx]
+                last_waypoint = waypoint
+
+            lx, ly = last_waypoint
+            order_distance += self.goal_heuristics[ly][lx]
+
+            if smallest_distance is None or order_distance < smallest_distance:
+                smallest_distance = order_distance
+
+        return smallest_distance
 
     def furthest_waypoint(self, position, excluding: Set[Tuple[int, int]]):
         if self.are_all(excluding):

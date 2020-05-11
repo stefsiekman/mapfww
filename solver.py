@@ -86,7 +86,7 @@ def solve_od_id(grid, groups=None) -> PathSet:
             return solution
 
         # Try to find another path for conflicting agents
-        logger.debug("\nConflict between:", conflicts)
+        logger.info(f"\nConflict between: {conflicts}")
 
         assert len(conflicts) == 2, "Only two agent groups conflict at a time"
 

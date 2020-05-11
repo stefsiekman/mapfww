@@ -1,6 +1,6 @@
-def info(msg=None, extra=None, end="\n"):
+def info(msg=None, end="\n"):
     # return
-    print(msg, extra, end=end)
+    print(msg, end=end)
 
 
 def debug(msg=None, extra=None):
