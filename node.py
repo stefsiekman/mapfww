@@ -15,7 +15,7 @@ class Node:
         self.parent = parent
 
         # Copy or create waypoints list
-        self.visited_waypoints: Set[Tuple[int, int]] = visited_waypoints
+        self.visited_waypoints: List[Set[Tuple[int, int]]] = visited_waypoints
         if self.visited_waypoints is None:
             self.visited_waypoints = [set() for _ in range(grid.agents)]
 
@@ -33,6 +33,16 @@ class Node:
                              for agent in range(len(positions)))
 
         self.f = self.cost + self.heuristic
+
+    def standard_hash(self):
+        """
+        Hash (tuple) to uniquely identify this node, given it's treated as
+        standard. So takes the positions and visited waypoints into account.
+        """
+
+        return tuple(self.positions), tuple(
+            tuple(sorted(x + y * self.grid.w for x, y in waypoints)) for
+            waypoints in self.visited_waypoints)
 
     def augmented(self):
         pass

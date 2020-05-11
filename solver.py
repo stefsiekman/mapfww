@@ -29,13 +29,24 @@ def solve_od(grid) -> PathSet:
     open_nodes.put((0, 0, node_id, grid.root_node()))
     node_id += 1
 
+    visited_standard_nodes = set()
+
     max_cost = 0
 
     while not open_nodes.empty():
         f, h, id, node = open_nodes.get()
 
         logger.debug(
-            f"\n==> At node #{id} (h = {node.heuristic}, g = {node.cost})")
+            f"\n==> At node #{id} (f = {f}, h = {node.heuristic}, g = {node.cost})")
+
+        if node.is_standard():
+            pos_tuple = node.standard_hash()
+            if pos_tuple in visited_standard_nodes:
+                logger.debug("    skip")
+                continue
+            else:
+                visited_standard_nodes.add(pos_tuple)
+
         for agent in range(node.grid.agents):
             logger.debug(f"Agent {agent} is at {node.positions[agent]}")
             logger.debug(f"        visited {node.visited_waypoints[agent]} ")
@@ -48,6 +59,7 @@ def solve_od(grid) -> PathSet:
         # Stop if the cost has been exceeded in case of illegal moves
         if grid.illegal_moves is not None:
             if node.f > len(grid.illegal_moves) - 1:
+                logger.info("Return due to rising costs!")
                 return
 
         if node.all_done():
@@ -66,6 +78,8 @@ def solve_od(grid) -> PathSet:
         # if node_id > 1000:
         #     exit()
 
+    logger.info("They never made it...")
+
 
 def solve_od_id(grid, groups=None) -> PathSet:
     if groups is None:
@@ -77,7 +91,9 @@ def solve_od_id(grid, groups=None) -> PathSet:
     group_solutions = []
     for group in groups:
         logger.info(f"Running for group {group}")
-        group_solutions.append((solve_od(grid.copy(group)), group))
+        s = solve_od(grid.copy(group))
+        assert s is not None
+        group_solutions.append((s, group))
 
     solution = PathSet.merge(group_solutions)
 

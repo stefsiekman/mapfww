@@ -8,7 +8,7 @@ from solver import solve_od_id
 
 if __name__ == "__main__":
     benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 12,
-                                 "A*+OD+ID", "opt heuristic, illegal moves")
+                                 "A*+OD+ID", "opt heuristic")
 
     logger.start()
 

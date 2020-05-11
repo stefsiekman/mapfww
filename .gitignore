@@ -2,5 +2,6 @@ __pycache__/
 venv/
 .idea/
 img/
+logs/
 .DS_Store
 Client_library.py
