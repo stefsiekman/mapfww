@@ -8,9 +8,9 @@ from solver import solve_od_id
 
 if __name__ == "__main__":
     benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 18,
-                                 "A*+OD+ID", "better ID")
+                                 "A*+OD+ID", "better ID", False)
 
-    logger.start()
+    logger.start(info=benchmark.debug)
 
     for problem in benchmark:
         print(f"Creating grid of {problem.width}x{problem.height}...")
@@ -49,3 +49,5 @@ if __name__ == "__main__":
         print(solution.to_json())
 
         problem.add_solution(solution.to_json())
+
+    logger.stop()
