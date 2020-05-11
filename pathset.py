@@ -99,6 +99,11 @@ class PathSet:
     def to_json(self):
         return [list(path) for path in self.paths]
 
+    def pad(self):
+        max_length = len(self)
+        for path in self.paths:
+            path.pad_to(max_length)
+
     @staticmethod
     def merge(solutions: List[Tuple[PathSet, List[int]]]) -> PathSet:
         """
@@ -115,11 +120,8 @@ class PathSet:
         for solution, group in solutions:
             for index_in_solution, agent in enumerate(group):
                 combined_solution.paths[agent] = \
-                    solution.paths[index_in_solution]
+                    solution.paths[index_in_solution].copy()
 
-        # Pad the paths
-        max_length = len(combined_solution)
-        for path in combined_solution.paths:
-            path.pad_to(max_length)
+        combined_solution.pad()
 
         return combined_solution

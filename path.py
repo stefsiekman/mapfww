@@ -1,3 +1,4 @@
+from __future__ import annotations
 from collections import deque
 
 from typing import Tuple
@@ -37,3 +38,24 @@ class Path:
         last_position = self.last_position()
         while len(self) < length:
             self.add_position(last_position)
+
+    def copy(self) -> Path:
+        return Path(self.positions.copy())
+
+    def unpadded(self) -> Path:
+        """
+        Remove all the duplicate positions at the end of a path.
+        :return: Path copy of itself, less the duplicates
+        """
+        new_path = self.copy()
+
+        while len(new_path.positions) > 1:
+            last = new_path.positions[-1]
+            before_last = new_path.positions[-2]
+
+            if last == before_last:
+                new_path.positions.pop()
+            else:
+                break
+
+        return new_path

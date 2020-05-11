@@ -34,14 +34,21 @@ def solve_od(grid) -> PathSet:
     while not open_nodes.empty():
         f, h, id, node = open_nodes.get()
 
-        logger.debug(f"\n==> At node #{id} (h = {node.heuristic}, g = {node.cost})")
+        logger.debug(
+            f"\n==> At node #{id} (h = {node.heuristic}, g = {node.cost})")
         for agent in range(node.grid.agents):
             logger.debug(f"Agent {agent} is at {node.positions[agent]}")
             logger.debug(f"        visited {node.visited_waypoints[agent]} ")
 
         if node.cost > max_cost:
-            max_cost = node.cost
-            logger.info(f"\rMax cost: {max_cost}, queue length: {node_id}", end="")
+            max_cost = node.f
+            logger.info(f"\rMax cost: {f}, queue length: {node_id}",
+                        end="")
+
+        # Stop if the cost has been exceeded in case of illegal moves
+        if grid.illegal_moves is not None:
+            if node.f > len(grid.illegal_moves) - 1:
+                return
 
         if node.all_done():
             logger.debug()
@@ -51,12 +58,12 @@ def solve_od(grid) -> PathSet:
             item = (new_node.f, new_node.heuristic, node_id, new_node)
 
             logger.debug(f"    + #{node_id} h = {new_node.heuristic}, "
-                  f"g = {new_node.cost} at {new_node.positions} with {new_node.visited_waypoints}")
+                         f"g = {new_node.cost} at {new_node.positions} with {new_node.visited_waypoints}")
 
             node_id += 1
             open_nodes.put(item)
 
-        # if node.cost == 10:
+        # if node_id > 1000:
         #     exit()
 
 
@@ -69,7 +76,7 @@ def solve_od_id(grid, groups=None) -> PathSet:
 
     group_solutions = []
     for group in groups:
-        logger.debug("Running for group", group)
+        logger.info(f"Running for group {group}")
         group_solutions.append((solve_od(grid.copy(group)), group))
 
     solution = PathSet.merge(group_solutions)
@@ -87,21 +94,41 @@ def solve_od_id(grid, groups=None) -> PathSet:
 
         # Try to find another path for conflicting agents
         logger.info(f"\nConflict between: {conflicts}")
-
         assert len(conflicts) == 2, "Only two agent groups conflict at a time"
 
-        for conflicting_agent in conflicts:
-            group_index = [i for i, g in enumerate(groups)
-                           if conflicting_agent in g][0]
-            other_agent = list(conflicts - {conflicting_agent})[0]
-            other_group_index = [i for i, g in enumerate(groups)
-                                 if other_agent in g][0]
+        agent_a, agent_b = conflicts
+        solution_a, group_a, solution_i_a = next(
+            (s, g, i) for i, (s, g) in enumerate(group_solutions) if agent_a in g)
 
-            other_grids = [grid.copy()]
+        agent_b = next(a for a in conflicts if a != agent_a)
+        solution_b, group_b, solution_i_b = next(
+            (s, g, i) for i, (s, g) in enumerate(group_solutions) if agent_b in g)
 
-            # new_solutions =
+        logger.info(f"Between groups: {group_a} and {group_b}")
+        logger.info(f"Can A change its path limited to {len(solution_a)}")
+        logger.info(list(solution_a))
 
-        exit()
+        new_solution = solve_od(grid.copy(group_a, solution_b))
+        if new_solution is None:
+            logger.info("No solution was found")
+        else:
+            logger.info(" Yes!")
+            logger.info(f"Has length: {len(new_solution)}")
+            logger.info(list(new_solution))
+            # Recreate the solution
+            group_solutions[solution_i_a] = (new_solution, group_a)
+            return PathSet.merge(group_solutions)
+
+        logger.info(f"Can B change its path limited to {len(solution_b)}")
+
+        new_solution = solve_od(grid.copy(group_b, solution_a))
+        if new_solution is None:
+            logger.info("No solution was found")
+        else:
+            logger.info(" Yes!")
+            logger.info(f"Has length: {len(new_solution)}")
+
+        logger.info("Combining groups...")
 
         # Solve with combined groups
         conflict_group = []
@@ -112,6 +139,7 @@ def solve_od_id(grid, groups=None) -> PathSet:
             else:
                 new_groups.append(group)
         new_groups.append(conflict_group)
+        logger.info(f"New groups: {new_groups}")
         return solve_od_id(grid, new_groups)
 
     return solution

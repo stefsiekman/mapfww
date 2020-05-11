@@ -2,12 +2,15 @@ from time import time
 
 from mapfw import MapfwBenchmarker
 
+import logger
 from grid import Grid
 from solver import solve_od_id
 
 if __name__ == "__main__":
-    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 16,
-                                 "A*+OD+ID", "illegal moves")
+    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 12,
+                                 "A*+OD+ID", "opt heuristic, illegal moves")
+
+    logger.start()
 
     for problem in benchmark:
         print(f"Creating grid of {problem.width}x{problem.height}...")
