@@ -2,12 +2,13 @@ from queue import Queue
 from typing import List
 
 from node import Node
+from pathset import PathSet
 from waypoint_map import WaypointMap
 
 
 class Grid:
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, illegal_moves=None):
         self.w = width
         self.h = height
         self.walls = [[False for _ in range(width)] for _ in range(height)]
@@ -16,6 +17,7 @@ class Grid:
         self.starts = []
         self.goals = []
         self.waypoints: List[WaypointMap] = []
+        self.illegal_moves: PathSet = illegal_moves
 
     def add_wall(self, x, y):
         assert self.agents == 0, "Add agents after all walls are added"
@@ -35,6 +37,13 @@ class Grid:
 
     def root_node(self):
         return Node(self, self.starts[:], [None] * self.agents, 0, [])
+
+    def is_move_illegal(self, from_time, move_from, move_to):
+        if self.illegal_moves is None:
+            return False
+
+        return not self.illegal_moves.move_possible(from_time, move_from,
+                                                    move_to)
 
     def valid_neighbours(self, position):
         """
@@ -104,20 +113,21 @@ class Grid:
 
         return heuristics
 
-    def heuristic(self, agent, position, visited_waypoints):
-        return self.waypoints[agent].heuristic(position, visited_waypoints)
+    def heuristic(self, agent, position, goal_waypoint):
+        return self.waypoints[agent].heuristic(position, goal_waypoint)
 
     def on_waypoint(self, agent, position):
         return self.waypoints[agent].is_waypoint(position)
 
-    def copy(self, agents):
+    def copy(self, agents, illegal_moves=None):
         """
         Create a copy of this grid with just the information for a set of
         agents.
         :param agents: List[int] agents of which to include the information
+        :param illegal_moves: Optional[PathSet]
         """
 
-        new_grid = Grid(self.w, self.h)
+        new_grid = Grid(self.w, self.h, illegal_moves)
         new_grid.walls = self.walls
 
         for agent_index in agents:

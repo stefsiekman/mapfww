@@ -1,4 +1,4 @@
-from typing import Tuple, Set
+from typing import Tuple, Set, Optional
 
 
 class WaypointMap:
@@ -13,22 +13,13 @@ class WaypointMap:
         self.waypoints.add((x, y))
         self.distance_maps[(x, y)] = self.grid.backtrack_heuristics((x, y))
 
-    def heuristic(self, position, visited_waypoints: Set[Tuple[int, int]]):
-        """
-        Calculate the heuristic for an agent, given a current position and
-        a set of waypoints that have already been visited.
-
-        From now the furthest waypoint is taken. The heuristic is the distance
-        to that waypoint, plus the distance to the goal from there. This is
-        our course admissible.
-        """
-
+    def heuristic(self, position, goal_waypoint: Optional[Tuple[int, int]]):
         x, y = position
         dist_to_goal = self.goal_heuristics[y][x]
         dist_to_waypoint = 0
 
         # Distance to waypoint can only be if not all have been visited
-        waypoint = self.furthest_waypoint(position, visited_waypoints)
+        waypoint = goal_waypoint
         if waypoint is not None:
             wpx, wpy = waypoint
             dist_to_waypoint = self.distance_maps[waypoint][y][x]

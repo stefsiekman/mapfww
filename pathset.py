@@ -19,6 +19,31 @@ class PathSet:
         for agent, position in enumerate(positions):
             self.paths[agent].prepend_position(position)
 
+    def move_possible(self, time: int, from_pos: Tuple[int, int],
+                      to_pos: Tuple[int, int]) -> bool:
+        """
+        Check whether a movement from a position to another position is
+        possible at a given time without conflicting with any of the paths in
+        this set.
+        :param time: Time since start when at start position. So t=2 would be
+        the third element in the path list.
+        """
+
+        if time + 1 >= len(self):
+            return True
+
+        # Move into a position already taken
+        if any(path[time + 1] == to_pos for path in self.paths):
+            return False
+
+        # Edge collisions
+        if any(Edge(from_pos, to_pos).conflicts(
+                Edge(path[time], path[time + 1]))
+               for path in self.paths):
+            return False
+
+        return True
+
     def conflicts(self) -> Optional[Set[int]]:
         """
         Checks for any conflicts in the paths. When the first conflict is found

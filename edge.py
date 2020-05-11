@@ -1,7 +1,7 @@
 class Edge:
 
     def __init__(self, a, b):
-        points = sorted([a,b], key=lambda k: [k[1], k[0]])
+        points = sorted([a, b], key=lambda k: [k[1], k[0]])
         self.a = points[0]
         self.b = points[1]
 
