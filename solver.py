@@ -1,8 +1,10 @@
 import itertools
 from queue import PriorityQueue
+from typing import Tuple
 
 import logger
 from grid import Grid
+from group import Group
 from pathset import PathSet
 
 
@@ -63,7 +65,7 @@ def solve_od(grid) -> PathSet:
                 return
 
         if node.all_done():
-            logger.debug()
+            logger.info("")
             return create_solution(grid, node)
 
         for new_node in node.expand():
@@ -81,81 +83,65 @@ def solve_od(grid) -> PathSet:
     logger.info("They never made it...")
 
 
-def solve_od_id(grid, groups=None) -> PathSet:
-    if groups is None:
-        groups = [[n] for n in range(grid.agents)]
+def solve_od_group(grid, group):
+    return solve_od(grid.copy(group))
 
-    groups_string = ", ".join([str(g) for g in groups])
-    logger.debug(f"\nSolving with groups: {groups_string}")
 
-    group_solutions = []
+def solve_od_id(grid) -> PathSet:
+    solved_group_conflicts = set()
+
+    # Assign each agent to a group
+    groups = [Group([n], grid) for n in range(grid.agents)]
+
+    # Plan a path for each group
     for group in groups:
-        logger.info(f"Running for group {group}")
-        s = solve_od(grid.copy(group))
-        assert s is not None
-        group_solutions.append((s, group))
+        group.solve_with(solve_od)
 
-    solution = PathSet.merge(group_solutions)
+    # TODO: fill conflict avoidance table with every path
 
-    # Solve again if there are conflicts
-    conflicts = solution.conflicts()
-    if conflicts is not None:
-        # Only one group and conflicts? No solution
-        if len(groups) == 1:
-            logger.debug("\nNo valid solution could be found")
-            logger.debug("Last solution:")
-            for s in solution:
-                logger.debug(f"    {s}")
-            return solution
+    # until no conflicts occur
+    while True:
+        # Simulate execution of all paths until a conflict between two groups
+        # G1 and G2 occurs
+        conflicts = Group.conflicting(groups)
+        if conflicts is None:
+            break
+        group_a, group_b = conflicts
+        group_combo_hash = (group_a.hash(), group_b.hash())
+        resolved_conflict = False
 
-        # Try to find another path for conflicting agents
-        logger.info(f"\nConflict between: {conflicts}")
-        assert len(conflicts) == 2, "Only two agent groups conflict at a time"
+        # if these two groups have not conflicted before
+        if group_combo_hash not in solved_group_conflicts:
+            # fill illegal move table with the current paths for G2
+            # find another set of paths with the same cost for G1
+            resolved_conflict |= group_a.find_non_conflicting_alt(solve_od,
+                                                                  group_b)
 
-        agent_a, agent_b = conflicts
-        solution_a, group_a, solution_i_a = next(
-            (s, g, i) for i, (s, g) in enumerate(group_solutions) if agent_a in g)
+            # if failed to find such a set then
+            if not resolved_conflict:
+                # fill illegal move table with the current paths for G1
 
-        agent_b = next(a for a in conflicts if a != agent_a)
-        solution_b, group_b, solution_i_b = next(
-            (s, g, i) for i, (s, g) in enumerate(group_solutions) if agent_b in g)
+                # find another set of paths with the same cost for G2
+                resolved_conflict |= group_b.find_non_conflicting_alt(solve_od,
+                                                                      group_a)
 
-        logger.info(f"Between groups: {group_a} and {group_b}")
-        logger.info(f"Can A change its path limited to {len(solution_a)}")
-        logger.info(list(solution_a))
+        # if failed to find an alternate set of paths for G1 and G2 then
+        if not resolved_conflict:
+            # merge G1 and G2 into a single group
+            new_group = group_a + group_b
+            groups.remove(group_a)
+            groups.remove(group_b)
+            groups.append(new_group)
 
-        new_solution = solve_od(grid.copy(group_a, solution_b))
-        if new_solution is None:
-            logger.info("No solution was found")
-        else:
-            logger.info(" Yes!")
-            logger.info(f"Has length: {len(new_solution)}")
-            logger.info(list(new_solution))
-            # Recreate the solution
-            group_solutions[solution_i_a] = (new_solution, group_a)
-            return PathSet.merge(group_solutions)
+            # cooperatively plan new group
+            new_group.solve_with(solve_od)
 
-        logger.info(f"Can B change its path limited to {len(solution_b)}")
+        # TODO: update conflict avoidance table with changes made to paths
 
-        new_solution = solve_od(grid.copy(group_b, solution_a))
-        if new_solution is None:
-            logger.info("No solution was found")
-        else:
-            logger.info(" Yes!")
-            logger.info(f"Has length: {len(new_solution)}")
+    # solution ← paths of all groups combined
+    solution = Group.combined_solution(groups)
 
-        logger.info("Combining groups...")
-
-        # Solve with combined groups
-        conflict_group = []
-        new_groups = []
-        for group in groups:
-            if any(c in group for c in conflicts):
-                conflict_group.extend(group)
-            else:
-                new_groups.append(group)
-        new_groups.append(conflict_group)
-        logger.info(f"New groups: {new_groups}")
-        return solve_od_id(grid, new_groups)
-
+    # return solution
     return solution
+
+    return

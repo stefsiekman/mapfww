@@ -19,7 +19,7 @@ def info(msg=None, end="\n"):
 
 
 def debug(msg=None, extra=None):
-    return
+    # return
     file.write(str(msg))
     if extra is not None:
         file.write(" ")
