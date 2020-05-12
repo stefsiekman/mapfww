@@ -29,7 +29,7 @@ def solve_od(grid) -> PathSet:
 
     open_nodes = PriorityQueue()
     node_id = 0
-    open_nodes.put((0, 0, node_id, grid.root_node()))
+    open_nodes.put((0, 0, 0, node_id, grid.root_node()))
     node_id += 1
 
     visited_standard_nodes = set()
@@ -37,7 +37,7 @@ def solve_od(grid) -> PathSet:
     max_cost = 0
 
     while not open_nodes.empty():
-        f, h, id, node = open_nodes.get()
+        f, conflicts, h, id, node = open_nodes.get()
 
         logger.debug(
             f"\n==> At node #{id} (f = {f}, h = {node.heuristic}, g = {node.cost})")
@@ -70,7 +70,8 @@ def solve_od(grid) -> PathSet:
             return create_solution(grid, node)
 
         for new_node in node.expand():
-            item = (new_node.f, new_node.heuristic, node_id, new_node)
+            item = (new_node.f, new_node.conflicts, new_node.heuristic,
+                    node_id, new_node)
 
             logger.debug(f"    + #{node_id} h = {new_node.heuristic}, "
                          f"g = {new_node.cost} at {new_node.positions} with {new_node.visited_waypoints}")
