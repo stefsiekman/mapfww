@@ -3,6 +3,7 @@ from queue import PriorityQueue
 from typing import Tuple
 
 import logger
+from cat import CAT
 from grid import Grid
 from group import Group
 from pathset import PathSet
@@ -96,10 +97,11 @@ def solve_od_id(grid) -> PathSet:
     # Plan a path for each group
     logger.info("Planning path for each agent...")
     for group in groups:
-        group.solve_with(solve_od)
+        group.solve_with(solve_od, None)
     logger.info(" ... done")
 
-    # TODO: fill conflict avoidance table with every path
+    # fill conflict avoidance table with every path
+    cat = CAT(grid.agents, groups)
 
     # until no conflicts occur
     while True:
@@ -122,7 +124,7 @@ def solve_od_id(grid) -> PathSet:
             # fill illegal move table with the current paths for G2
             # find another set of paths with the same cost for G1
             resolved_conflict |= group_a.find_non_conflicting_alt(solve_od,
-                                                                  group_b)
+                                                                  group_b, cat)
 
             # if failed to find such a set then
             if not resolved_conflict:
@@ -130,7 +132,8 @@ def solve_od_id(grid) -> PathSet:
 
                 # find another set of paths with the same cost for G2
                 resolved_conflict |= group_b.find_non_conflicting_alt(solve_od,
-                                                                      group_a)
+                                                                      group_a,
+                                                                      cat)
 
         # if failed to find an alternate set of paths for G1 and G2 then
         if not resolved_conflict:
@@ -141,14 +144,13 @@ def solve_od_id(grid) -> PathSet:
             groups.append(new_group)
 
             # cooperatively plan new group
-            new_group.solve_with(solve_od)
+            new_group.solve_with(solve_od, cat)
 
-        # TODO: update conflict avoidance table with changes made to paths
+        # update conflict avoidance table with changes made to paths
+        cat.update(groups)
 
     # solution ← paths of all groups combined
     solution = Group.combined_solution(groups)
 
     # return solution
     return solution
-
-    return

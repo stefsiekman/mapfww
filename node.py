@@ -5,12 +5,13 @@ from edge import Edge
 
 class Node:
 
-    def __init__(self, grid, positions, moves, cost, taken_edges, parent=None,
-                 visited_waypoints=None):
+    def __init__(self, grid, positions, moves, cost, conflicts, taken_edges,
+                 parent=None, visited_waypoints=None):
         self.grid = grid
         self.positions = positions
         self.moves = moves
         self.cost = cost
+        self.conflicts = conflicts
         self.taken_edges = taken_edges
         self.parent = parent
 
@@ -55,7 +56,8 @@ class Node:
             new_moves = self.moves[:]
             new_moves[agent] = position
             return [Node(self.grid, self.positions, new_moves, self.cost,
-                         self.taken_edges, self, self.visited_waypoints)]
+                         self.conflicts, self.taken_edges, self,
+                         self.visited_waypoints)]
 
         new_nodes = []
 
@@ -73,6 +75,11 @@ class Node:
             if self.grid.is_move_illegal(self.cost, position, neighbour):
                 continue
 
+            # Check for new conflicts with other groups
+            new_conflicts = self.conflicts
+            if self.grid.is_move_conflicting(self.cost, position, neighbour):
+                new_conflicts += 1
+
             new_moves = self.moves[:]
             new_moves[agent] = neighbour
             new_taken_edges = self.taken_edges[:]
@@ -86,8 +93,8 @@ class Node:
                 new_visited_waypoints[agent].add(neighbour)
 
             new_node = Node(self.grid, self.positions, new_moves,
-                            self.cost + 1, new_taken_edges, self,
-                            new_visited_waypoints)
+                            self.cost + 1, new_conflicts, new_taken_edges,
+                            self, new_visited_waypoints)
             new_nodes.append(new_node)
 
         return new_nodes

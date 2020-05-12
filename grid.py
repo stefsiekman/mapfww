@@ -1,6 +1,8 @@
 from queue import Queue
-from typing import List
+from typing import List, Optional
 
+from cat import CAT
+from group import Group
 from node import Node
 from pathset import PathSet
 from waypoint_map import WaypointMap
@@ -18,6 +20,8 @@ class Grid:
         self.goals = []
         self.waypoints: List[WaypointMap] = []
         self.illegal_moves: PathSet = illegal_moves
+        self.cat: Optional[CAT] = None
+        self.group: Optional[Group] = None
 
     def add_wall(self, x, y):
         assert self.agents == 0, "Add agents after all walls are added"
@@ -36,7 +40,7 @@ class Grid:
         self.waypoints[agent].add_waypoint(x, y)
 
     def root_node(self):
-        return Node(self, self.starts[:], [None] * self.agents, 0, [])
+        return Node(self, self.starts[:], [None] * self.agents, 0, 0, [])
 
     def is_move_illegal(self, from_time, move_from, move_to):
         if self.illegal_moves is None:
@@ -44,6 +48,12 @@ class Grid:
 
         return not self.illegal_moves.move_possible(from_time, move_from,
                                                     move_to)
+
+    def is_move_conflicting(self, from_time, move_from, move_to):
+        if self.cat is None or self.group is None:
+            return False
+
+        return self.cat.conflicts(self.group, from_time, move_from, move_to)
 
     def valid_neighbours(self, position):
         """
@@ -119,7 +129,7 @@ class Grid:
     def on_waypoint(self, agent, position):
         return self.waypoints[agent].is_waypoint(position)
 
-    def copy(self, agents, illegal_moves=None):
+    def copy(self, agents, cat: CAT, illegal_moves=None):
         """
         Create a copy of this grid with just the information for a set of
         agents.
@@ -135,6 +145,8 @@ class Grid:
             new_grid.goals.append(self.goals[agent_index])
             new_grid.waypoints.append(self.waypoints[agent_index])
             new_grid.agents += 1
+
+        new_grid.cat = cat
 
         return new_grid
 
