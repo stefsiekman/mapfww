@@ -98,7 +98,7 @@ def solve_od_id(grid) -> PathSet:
     # Plan a path for each group
     logger.info("Planning path for each agent...")
     for group in groups:
-        group.solve_with(solve_od, None)
+        group.solve_with(solve_od)
     logger.info(" ... done")
 
     # fill conflict avoidance table with every path
@@ -124,6 +124,7 @@ def solve_od_id(grid) -> PathSet:
 
             # fill illegal move table with the current paths for G2
             # find another set of paths with the same cost for G1
+            logger.info(f"Trying to find an alt for {group_a.agents}")
             resolved_conflict |= group_a.find_non_conflicting_alt(solve_od,
                                                                   group_b, cat)
 
@@ -132,12 +133,14 @@ def solve_od_id(grid) -> PathSet:
                 # fill illegal move table with the current paths for G1
 
                 # find another set of paths with the same cost for G2
+                logger.info(f"Trying to find an alt for {group_b.agents}")
                 resolved_conflict |= group_b.find_non_conflicting_alt(solve_od,
                                                                       group_a,
                                                                       cat)
 
         # if failed to find an alternate set of paths for G1 and G2 then
         if not resolved_conflict:
+            logger.info(f"Merging group {group_a.agents} and {group_b.agents}")
             # merge G1 and G2 into a single group
             new_group = group_a + group_b
             groups.remove(group_a)
@@ -145,7 +148,9 @@ def solve_od_id(grid) -> PathSet:
             groups.append(new_group)
 
             # cooperatively plan new group
-            new_group.solve_with(solve_od, cat)
+            new_group.solve_with(solve_od, cat=cat)
+        else:
+            logger.info("Conflict was resolved")
 
         # update conflict avoidance table with changes made to paths
         cat.update(groups)

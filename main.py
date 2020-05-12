@@ -7,7 +7,7 @@ from grid import Grid
 from solver import solve_od_id
 
 if __name__ == "__main__":
-    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 10,
+    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 12,
                                  "A*+OD+ID", "CAT")
 
     logger.start(info=benchmark.debug)
