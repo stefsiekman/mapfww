@@ -9,6 +9,7 @@ class CAT:
         self.agents = agents
         self.groups = groups
         self.agent_map: Dict[int, Group] = dict()
+        self.map_agents()
 
     def map_agents(self):
         """
@@ -23,10 +24,16 @@ class CAT:
         Update the CAT with new group solutions.
         """
 
-        # TODO: Implement method
-
-        pass
+        self.groups = groups
+        self.map_agents()
 
     def conflicts(self, group: Group, from_time, move_from, move_to) -> bool:
-        # TODO: Implement method
+        other_groups = (g for g in self.groups if g != group)
+        for other_group in other_groups:
+            assert other_group.solution is not None, "Groups are solved"
+
+            if not other_group.solution.move_possible(from_time, move_from,
+                                                      move_to):
+                return True
+
         return False

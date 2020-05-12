@@ -6,9 +6,10 @@ import logger
 from grid import Grid
 from solver import solve_od_id
 
-if __name__ == "__main__":
-    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", 12,
-                                 "A*+OD+ID", "CAT")
+
+def run_for(id, for_real):
+    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", id,
+                                 "A*+OD+ID", "CAT", not for_real)
 
     logger.start(info=benchmark.debug)
 
@@ -51,3 +52,19 @@ if __name__ == "__main__":
         problem.add_solution(solution.to_json())
 
     logger.stop()
+
+
+if __name__ == "__main__":
+    for id in range(1, 18 + 1):
+        if id in [8, 9, 10]:
+            continue
+
+        print()
+        print()
+        print()
+        print("========================")
+        print(f"=  RUN for #{id}")
+        print("========================")
+        print()
+
+        run_for(id, True)
