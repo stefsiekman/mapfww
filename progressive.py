@@ -2,7 +2,7 @@ import itertools
 import random
 import signal
 import time
-from typing import List, Dict, Tuple, Set, FrozenSet
+from typing import List, Dict, Tuple, Set, FrozenSet, Optional
 
 import solver
 from grid import Grid
@@ -142,6 +142,78 @@ def run_progressive(timeout: int, count: int, waypoints: int, size: int):
     return results
 
 
+def run_matrix(timeout: int, count: int, size: int):
+    level = 1
+    step = 0
+    active_level = True
+
+    results: Dict[Tuple[int, int], float] = dict()
+
+    # Iterate diagonally, first more agents start with zero waypoints
+    while True:
+        agents = level - step
+        waypoints = 1 + step
+        step += 1
+
+        if step >= level:
+            if not active_level:
+                break
+
+            level += 1
+            step = 0
+            active_level = False
+
+        # Check if running this difficulty is feasible
+        if agents != 1:
+            key = agents - 1, waypoints
+            if key not in results or results[key] == 0:
+                continue
+        if waypoints != 1:
+            key = agents, waypoints - 1
+            if key not in results or results[key] == 0:
+                continue
+
+        print(f"==> {agents} agents, {waypoints} waypoints")
+        benchmarks = [generate_grid(agents, waypoints, size)
+                      for _ in range(count)]
+        print("    Generated grids")
+
+        times = []
+        print("    Benchmarking ", end="")
+        for benchmark in benchmarks:
+            signal.alarm(timeout)
+            try:
+                time = run_single(benchmark)
+                signal.alarm(0)
+                times.append(time)
+            except Exception as e:
+                pass
+
+            print(".", end="")
+        print(" done")
+        results[agents, waypoints] = len(times) / count
+        active_level = True
+
+        print(
+            f"    Finished: {len(times)} ({round(len(times) / count * 100)}%)")
+
+    agent_data = [agent for agent, _ in results.keys()]
+    waypoint_data = [waypoint for _, waypoint in results.keys()]
+
+    data = {
+        "agents/waypoints": list(range(1, max(agent_data) + 1))
+    }
+    for waypoints in range(1, max(waypoint_data) + 1):
+        wp_key = f"{waypoints}"
+        data[wp_key] = [''] * max(agent_data)
+        for agents in range(1, max(agent_data) + 1):
+            key = agents, waypoints
+            if key in results:
+                data[wp_key][agents - 1] = results[key]
+
+    write_table("matrix", data)
+
+
 def write_table(name: str, columns: Dict[str, List]):
     label = time.strftime("%Y%m%d_%H%M%S")
     with open(f"reports/report_{label}_{name}.csv", "w") as file:
@@ -184,4 +256,5 @@ def handler(signum, frame):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, handler)
-    write_reports(run_progressive(1, 50, 3, 8))
+    run_matrix(1, 1, 8)
+    # write_reports(run_progressive(1, 50, 3, 8))
