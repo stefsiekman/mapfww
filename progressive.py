@@ -4,6 +4,7 @@ import signal
 import time
 from typing import List, Dict, Tuple, Set, FrozenSet, Optional
 
+import imagery
 import solver
 from grid import Grid
 
@@ -210,6 +211,8 @@ def run_matrix(timeout: int, count: int, size: int):
     agent_data = [agent for agent, _ in results.keys()]
     waypoint_data = [waypoint for _, waypoint in results.keys()]
 
+    pixel_data = [[0] * max(waypoint_data) for _ in range(max(agent_data))]
+
     data = {
         "agents/waypoints": list(range(1, max(agent_data) + 1))
     }
@@ -220,8 +223,10 @@ def run_matrix(timeout: int, count: int, size: int):
             key = agents, waypoints
             if key in results:
                 data[wp_key][agents - 1] = results[key]
+                pixel_data[agents - 1][waypoints - 1] = results[key]
 
     write_table("matrix", data)
+    imagery.write_image("matrix", pixel_data)
 
 
 def write_table(name: str, columns: Dict[str, List]):
@@ -267,6 +272,6 @@ def handler(signum, frame):
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, handler)
     start_time = time.time()
-    run_matrix(1, 10, 8)
+    run_matrix(1, 2, 8)
     print(f"\n\nFinished in {time.time() - start_time} seconds")
     # write_reports(run_progressive(1, 50, 3, 8))
