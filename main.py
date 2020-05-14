@@ -55,16 +55,4 @@ def run_for(id, for_real):
 
 
 if __name__ == "__main__":
-    for id in range(1, 18 + 1):
-        if id in [8, 9, 10]:
-            continue
-
-        print()
-        print()
-        print()
-        print("========================")
-        print(f"=  RUN for #{id}")
-        print("========================")
-        print()
-
-        run_for(id, True)
+    run_for(9, True)
