@@ -2,10 +2,70 @@ import itertools
 import random
 import signal
 import time
-from typing import List, Dict
+from typing import List, Dict, Tuple, Set, FrozenSet
 
 import solver
 from grid import Grid
+
+
+def neighbours(tiles: Set[Tuple[int, int]],
+               tile: Tuple[int, int]) -> Set[Tuple[int, int]]:
+    neighbours = set()
+    for xOffs in [-1, 0, 1]:
+        for yOffs in [-1, 0, 1]:
+            if not (xOffs == 0 or yOffs == 0):
+                continue
+
+            neighbour = tile[0] + xOffs, tile[1] + yOffs
+
+            if neighbour not in tiles:
+                continue
+
+            neighbours.add(neighbour)
+
+    return neighbours
+
+
+def group_of(tiles: Set[Tuple[int, int]],
+             tile: Tuple[int, int]) -> Set[Tuple[int, int]]:
+    visited = set()
+
+    queue = [tile]
+    while len(queue) > 0:
+        visiting = queue.pop()
+        if visiting in visited:
+            continue
+        visited.add(visiting)
+        queue.extend(neighbours(tiles, visiting))
+
+    return visited
+
+
+def find_groups(tiles: Set[Tuple[int, int]]) -> \
+        Set[FrozenSet[Tuple[int, int]]]:
+    unvisited = tiles.copy()
+
+    groups = set()
+
+    while len(unvisited) > 0:
+        tile = next(iter(unvisited))
+        group = group_of(unvisited, tile)
+        unvisited -= group
+        groups.add(frozenset(group))
+
+    return groups
+
+
+def find_disconnected(tiles: Set[Tuple[int, int]]) -> Set[Tuple[int, int]]:
+    groups = find_groups(tiles)
+    groups.remove(max(groups, key=lambda g: len(g)))
+
+    disconnected = set()
+    for group in groups:
+        for tile in group:
+            disconnected.add(tile)
+
+    return disconnected
 
 
 def generate_grid(agents: int, waypoints: int, size: int) -> Grid:
@@ -15,6 +75,11 @@ def generate_grid(agents: int, waypoints: int, size: int) -> Grid:
     # 20% walls
     for _ in range(size * size // 5):
         tile = random.choice(tiles)
+        tiles.remove(tile)
+        grid.add_wall(tile[0], tile[1])
+
+    # Remove disconnected sections
+    for tile in find_disconnected(set(tiles)):
         tiles.remove(tile)
         grid.add_wall(tile[0], tile[1])
 
@@ -119,4 +184,4 @@ def handler(signum, frame):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, handler)
-    write_reports(run_progressive(1, 5, 3, 8))
+    write_reports(run_progressive(1, 50, 3, 8))

@@ -3,5 +3,6 @@ venv/
 .idea/
 img/
 logs/
+reports/
 .DS_Store
 Client_library.py
