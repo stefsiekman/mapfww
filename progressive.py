@@ -148,6 +148,7 @@ def run_matrix(timeout: int, count: int, size: int):
     active_level = True
 
     results: Dict[Tuple[int, int], float] = dict()
+    instance_results: List[float] = []
 
     # Iterate diagonally, first more agents start with zero waypoints
     while True:
@@ -173,13 +174,16 @@ def run_matrix(timeout: int, count: int, size: int):
             if key not in results or results[key] == 0:
                 continue
 
-        print(f"==> {agents} agents, {waypoints} waypoints")
-        benchmarks = [generate_grid(agents, waypoints, size)
-                      for _ in range(count)]
-        print("    Generated grids")
+        print(f"\n==> {agents} agents, {waypoints} waypoints")
+        print("    Generating grids ", end="")
+        benchmarks = []
+        for instance in range(count):
+            benchmarks.append(generate_grid(agents, waypoints, size))
+            print(".", end="")
+        print(" done")
 
         times = []
-        print("    Benchmarking ", end="")
+        print("    Benchmarking     ", end="")
         for benchmark in benchmarks:
             signal.alarm(timeout)
             try:
@@ -192,10 +196,16 @@ def run_matrix(timeout: int, count: int, size: int):
             print(".", end="")
         print(" done")
         results[agents, waypoints] = len(times) / count
+        instance_results.extend(times)
         active_level = True
 
         print(
             f"    Finished: {len(times)} ({round(len(times) / count * 100)}%)")
+
+    write_table("instances", {
+        "instance": list(range(1, len(instance_results) + 1)),
+        "time": sorted(instance_results),
+    })
 
     agent_data = [agent for agent, _ in results.keys()]
     waypoint_data = [waypoint for _, waypoint in results.keys()]
@@ -256,5 +266,7 @@ def handler(signum, frame):
 
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, handler)
-    run_matrix(1, 1, 8)
+    start_time = time.time()
+    run_matrix(1, 10, 8)
+    print(f"\n\nFinished in {time.time() - start_time} seconds")
     # write_reports(run_progressive(1, 50, 3, 8))
