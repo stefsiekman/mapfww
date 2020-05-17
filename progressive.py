@@ -101,6 +101,16 @@ def generate_grid(agents: int, waypoints: int, size: int) -> Grid:
     return grid
 
 
+def save_generate_grid(agents: int, waypoints: int, size: int) -> Grid:
+    grid = None
+    while grid is None:
+        try:
+            grid = generate_grid(agents, waypoints, size)
+        except IndexError:
+            grid = None
+    return grid
+
+
 def run_single(grid: Grid):
     start_time = time.time()
     solver.solve_od_id(grid)
@@ -113,7 +123,7 @@ def run_progressive(timeout: int, count: int, waypoints: int, size: int):
 
     while True:
         print(f"==> {agents} agents")
-        benchmarks = [generate_grid(agents, waypoints, size)
+        benchmarks = [save_generate_grid(agents, waypoints, size)
                       for _ in range(count)]
         print("    Generated grids")
 
@@ -179,7 +189,7 @@ def run_matrix(timeout: int, count: int, size: int):
         print("    Generating grids ", end="")
         benchmarks = []
         for instance in range(count):
-            benchmarks.append(generate_grid(agents, waypoints, size))
+            benchmarks.append(save_generate_grid(agents, waypoints, size))
             print(".", end="")
         print(" done")
 
@@ -272,6 +282,6 @@ def handler(signum, frame):
 if __name__ == "__main__":
     signal.signal(signal.SIGALRM, handler)
     start_time = time.time()
-    run_matrix(1, 2, 8)
+    run_matrix(1, 25, 16)
     print(f"\n\nFinished in {time.time() - start_time} seconds")
     # write_reports(run_progressive(1, 50, 3, 8))
