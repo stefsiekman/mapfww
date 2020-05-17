@@ -55,15 +55,11 @@ class PathSet:
         # Any shared positions?
         for step, positions in enumerate(step_positions):
             for agent, position in enumerate(positions):
-                shared_position_with = set()
                 for other_agent, other_position in enumerate(positions):
                     if other_agent == agent:
                         continue
                     if position == other_position:
-                        shared_position_with.add(other_agent)
-
-                if len(shared_position_with) > 0:
-                    return {agent} | shared_position_with
+                        return {agent, other_agent}
 
         # Crossing edges require more that one step
         if len(self) < 2:
@@ -76,14 +72,11 @@ class PathSet:
                      zip(positions, positions_before)]
 
             for agent, edge in enumerate(edges):
-                shared_edge_with = set()
                 for other_agent, other_edge in enumerate(edges):
                     if other_agent == agent:
                         continue
                     if edge.conflicts(other_edge):
-                        shared_edge_with.add(other_agent)
-                if len(shared_edge_with) > 0:
-                    return {agent} | shared_edge_with
+                        return {agent, other_agent}
 
     def __len__(self):
         return max(len(path) for path in self.paths)
