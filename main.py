@@ -9,7 +9,7 @@ from solver import solve_od_id
 
 def run_for(id, for_real):
     benchmark = MapfwBenchmarker("ffA1D303A8D47e39", id,
-                                 "A*+OD+ID", "TSP caching", not for_real)
+                                 "A*+OD+ID", "shared TSP caching", not for_real)
 
     logger.start(info=benchmark.debug)
 

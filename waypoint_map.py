@@ -10,6 +10,7 @@ class WaypointMap:
         self.distance_maps = dict()
         self.goal_heuristics = grid.backtrack_heuristics(goal)
         self.cache = dict()
+        self.shared_cache = dict()
 
     def add_waypoint(self, x, y):
         self.waypoints.add((x, y))
@@ -21,9 +22,9 @@ class WaypointMap:
         a set of waypoints that have already been visited.
         """
 
-        key = position, frozenset(visited_waypoints)
-        if key in self.cache:
-            return self.cache[key]
+        # key = position, frozenset(visited_waypoints)
+        # if key in self.cache:
+        #     return self.cache[key]
 
         x, y = position
 
@@ -35,7 +36,7 @@ class WaypointMap:
         else:
             smallest_distance = self.goal_heuristics[y][x]
 
-        self.cache[key] = smallest_distance
+        # self.cache[key] = smallest_distance
         return smallest_distance
 
     def distance_from(self, start, excluding):
@@ -46,7 +47,9 @@ class WaypointMap:
         This function is memoized, so it call be called frequently.
         """
 
-        # TODO: Memoize
+        key = start, frozenset(excluding)
+        if key in self.shared_cache:
+            return self.shared_cache[key]
 
         smallest_distance = None
         for order in permutations(self.waypoints - excluding - {start}):
@@ -64,6 +67,7 @@ class WaypointMap:
             if smallest_distance is None or order_distance < smallest_distance:
                 smallest_distance = order_distance
 
+        self.shared_cache[key] = smallest_distance
         return smallest_distance
 
     def is_waypoint(self, position):
