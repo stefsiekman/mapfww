@@ -55,5 +55,4 @@ def run_for(id, for_real):
 
 
 if __name__ == "__main__":
-    for id in [5, 11, 12, 14, 15, 16, 18]:
-        run_for(id, True)
+    run_for(23, False)

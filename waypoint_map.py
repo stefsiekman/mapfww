@@ -25,15 +25,36 @@ class WaypointMap:
         if key in self.cache:
             return self.cache[key]
 
+        x, y = position
+
+        if len(visited_waypoints) != len(self.waypoints):
+            smallest_distance = min(self.distance_from(wp, visited_waypoints) +
+                                    self.distance_maps[wp][y][x]
+                                    for wp in
+                                    self.waypoints - visited_waypoints)
+        else:
+            smallest_distance = self.goal_heuristics[y][x]
+
+        self.cache[key] = smallest_distance
+        return smallest_distance
+
+    def distance_from(self, start, excluding):
+        """
+        Calculates the distance from a start waypoints, via all other waypoints
+        (except those in 'excluding'), to the goal position.
+
+        This function is memoized, so it call be called frequently.
+        """
+
+        # TODO: Memoize
+
         smallest_distance = None
-        for order in permutations(self.waypoints - visited_waypoints):
-            last_waypoint = position
+        for order in permutations(self.waypoints - excluding - {start}):
+            last_waypoint = start
             order_distance = 0
 
             for waypoint in order:
                 lx, ly = last_waypoint
-                assert waypoint in self.distance_maps, \
-                    f"{waypoint} should be in distance maps"
                 order_distance += self.distance_maps[waypoint][ly][lx]
                 last_waypoint = waypoint
 
@@ -43,7 +64,6 @@ class WaypointMap:
             if smallest_distance is None or order_distance < smallest_distance:
                 smallest_distance = order_distance
 
-        self.cache[key] = smallest_distance
         return smallest_distance
 
     def is_waypoint(self, position):
