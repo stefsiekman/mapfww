@@ -42,7 +42,7 @@ def run_bulk(name, agent_range, waypoint_range):
     # Populate with all combinations within range
     for agents in range(agent_range[0], agent_range[1] + 1):
         for waypoints in range(waypoint_range[0], waypoint_range[1] + 1):
-            if agents == 0 and waypoints == 0:
+            if agents < 1:
                 continue
             busy_queue.put((agents, waypoints))
 
