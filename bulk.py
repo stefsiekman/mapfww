@@ -9,7 +9,7 @@ from queue import Queue
 from random import randint
 from threading import Thread
 
-from func_timeout import func_timeout
+from func_timeout import func_timeout, FunctionTimedOut
 from git import Repo
 
 
@@ -24,7 +24,13 @@ def work(index, busy_queue: Queue, result_queue: Queue):
     while True:
         agents, waypoints = busy_queue.get(block=True)
         start_time = time.time()
-        res = func_timeout(2.5, long_task)
+        res = None
+
+        try:
+            res = func_timeout(2.5, long_task)
+        except FunctionTimedOut:
+            pass
+
         result_queue.put((time.time() - start_time, res))
         busy_queue.put((agents, waypoints))
 
