@@ -9,6 +9,7 @@ class WaypointMap:
         self.waypoints = set()
         self.distance_maps = dict()
         self.goal_heuristics = grid.backtrack_heuristics(goal)
+        self.cache = dict()
 
     def add_waypoint(self, x, y):
         self.waypoints.add((x, y))
@@ -19,6 +20,10 @@ class WaypointMap:
         Calculate the heuristic for an agent, given a current position and
         a set of waypoints that have already been visited.
         """
+
+        key = position, frozenset(visited_waypoints)
+        if key in self.cache:
+            return self.cache[key]
 
         smallest_distance = None
         for order in permutations(self.waypoints - visited_waypoints):
@@ -38,6 +43,7 @@ class WaypointMap:
             if smallest_distance is None or order_distance < smallest_distance:
                 smallest_distance = order_distance
 
+        self.cache[key] = smallest_distance
         return smallest_distance
 
     def furthest_waypoint(self, position, excluding: Set[Tuple[int, int]]):

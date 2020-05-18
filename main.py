@@ -9,7 +9,7 @@ from solver import solve_od_id
 
 def run_for(id, for_real):
     benchmark = MapfwBenchmarker("ffA1D303A8D47e39", id,
-                                 "A*+OD+ID", "CAT", not for_real)
+                                 "A*+OD+ID", "TSP caching", not for_real)
 
     logger.start(info=benchmark.debug)
 
@@ -55,4 +55,5 @@ def run_for(id, for_real):
 
 
 if __name__ == "__main__":
-    run_for(23, False)
+    for id in [21, 22, 23]:
+        run_for(id, True)
