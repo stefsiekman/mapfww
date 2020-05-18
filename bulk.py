@@ -37,6 +37,9 @@ def run_bulk(name, agent_range, waypoint_range):
                       name=f"Worker-{i}")
                for i in range(thread_number)]
 
+    for worker in workers:
+        worker.start()
+
     # Collect results...
 
 
