@@ -56,7 +56,12 @@ def solve_od(grid) -> PathSet:
 
         if node.cost > max_cost:
             max_cost = node.f
-            logger.info(f"\rMax cost: {f}, queue length: {node_id}",
+
+        if node_id % 1000 == 0:
+            completed_perc = round(
+                (node_id - open_nodes.qsize()) / open_nodes.qsize() * 100)
+            logger.info(f"\rMax cost: {f}, queue length: {open_nodes.qsize()} "
+                        f"{completed_perc}%",
                         end="")
 
         # Stop if the cost has been exceeded in case of illegal moves

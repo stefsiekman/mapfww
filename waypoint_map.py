@@ -1,5 +1,9 @@
+import time
 from itertools import permutations
+from math import factorial
 from typing import Tuple, Set, Optional
+
+import logger
 
 
 class WaypointMap:
@@ -22,9 +26,9 @@ class WaypointMap:
         a set of waypoints that have already been visited.
         """
 
-        # key = position, frozenset(visited_waypoints)
-        # if key in self.cache:
-        #     return self.cache[key]
+        key = position, frozenset(visited_waypoints)
+        if key in self.cache:
+            return self.cache[key]
 
         x, y = position
 
@@ -36,7 +40,7 @@ class WaypointMap:
         else:
             smallest_distance = self.goal_heuristics[y][x]
 
-        # self.cache[key] = smallest_distance
+        self.cache[key] = smallest_distance
         return smallest_distance
 
     def distance_from(self, start, excluding):
@@ -51,8 +55,12 @@ class WaypointMap:
         if key in self.shared_cache:
             return self.shared_cache[key]
 
+        to_visit = self.waypoints - excluding - {start}
+        orderings = factorial(len(to_visit))
+        logger.info(f"Solving {orderings} orderings of TSP ...")
+
         smallest_distance = None
-        for order in permutations(self.waypoints - excluding - {start}):
+        for order in permutations(to_visit):
             last_waypoint = start
             order_distance = 0
 

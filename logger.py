@@ -28,7 +28,8 @@ def info(msg=None, end="\n"):
 
     file.write(str(msg))
     file.write(end)
-    print(msg, end=end)
+    flush = end != "\n"
+    print(msg, end=end, flush=flush)
 
     if should_force_flush:
         file.flush()
