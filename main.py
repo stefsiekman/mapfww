@@ -55,6 +55,8 @@ def run_for(id, for_real):
 
 
 if __name__ == "__main__":
-    run_for(25, True)
+    bid = int(input("Benchmark ID: "))
+    for_real = input("For real (y/[n]): ")
+    run_for(bid, for_real == 'y')
     # for id in [7, 11, 5, 12, 18, 21, 22, 23]:
     #     run_for(id, True)
