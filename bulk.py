@@ -15,13 +15,11 @@ from git import Repo
 from progressive import save_generate_grid, run_single
 
 
-def work(index, busy_queue: Queue, result_queue: Queue):
-    print(f"Starting worker #{index}")
-
+def work(index, size, busy_queue: Queue, result_queue: Queue):
     while True:
         agents, waypoints = busy_queue.get(block=True)
 
-        grid = save_generate_grid(agents, waypoints, 16)
+        grid = save_generate_grid(agents, waypoints, size)
         res = None
 
         try:
@@ -29,11 +27,11 @@ def work(index, busy_queue: Queue, result_queue: Queue):
         except FunctionTimedOut:
             pass
 
-        result_queue.put((agents, waypoints, res))
+        result_queue.put((agents, waypoints, size, res))
         busy_queue.put((agents, waypoints))
 
 
-def run_bulk(name, agent_range, waypoint_range):
+def run_bulk(name, size, agent_range, waypoint_range):
     thread_number = thread_count()
 
     busy_queue = Queue()
@@ -46,16 +44,27 @@ def run_bulk(name, agent_range, waypoint_range):
                 continue
             busy_queue.put((agents, waypoints))
 
-    workers = [Thread(target=work, args=(i, busy_queue, result_queue),
+    workers = [Thread(target=work, args=(i, size, busy_queue, result_queue),
                       name=f"Worker-{i}")
                for i in range(thread_number)]
 
     for worker in workers:
         worker.start()
 
-    while True:
-        res = result_queue.get(block=True)
-        print(f"{name}, {res[0]}, {res[1]}, {res[2]}")
+    result_file = "runs.csv"
+    if not os.path.exists(result_file):
+        with open(result_file, "w") as file:
+            file.write("Version,Agents,Waypoints,Size,Time\n")
+
+    runs = 0
+    with open(result_file, "a") as file:
+        while True:
+            res = result_queue.get(block=True)
+            res_time = res[3] if res[3] is not None else ""
+            file.write(f"{name},{res[0]},{res[1]},{res[2]},{res[3]}\n")
+            file.flush()
+            runs += 1
+            print(f"\rRan {runs} benchmarks", end="", flush=True)
 
 
 def thread_count():
@@ -91,7 +100,8 @@ if __name__ == "__main__":
     max_agents = int(input("Max # agents: "))
     min_waypoints = int(input("Min # waypoints: "))
     max_waypoints = int(input("Max # waypoints: "))
+    grid_size = int(input("Grid size: "))
 
-    run_bulk(head_hex,
+    run_bulk(head_hex, grid_size,
              (min_agents, max_agents),
              (min_waypoints, max_waypoints))
