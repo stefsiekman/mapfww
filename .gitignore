@@ -6,3 +6,4 @@ logs/
 reports/
 .DS_Store
 Client_library.py
+*.swp
