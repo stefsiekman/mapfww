@@ -1,7 +1,6 @@
-import time
-from itertools import permutations
+from queue import Queue
 from math import factorial
-from typing import Tuple, Set, Optional
+from typing import Tuple, Set, Optional, Dict
 
 import logger
 
@@ -33,7 +32,8 @@ class WaypointMap:
         x, y = position
 
         if len(visited_waypoints) != len(self.waypoints):
-            smallest_distance = min(self.distance_from(wp, visited_waypoints) +
+            path_lengths = self.dynamic_tsp(self.waypoints - visited_waypoints)
+            smallest_distance = min(path_lengths[wp] +
                                     self.distance_maps[wp][y][x]
                                     for wp in
                                     self.waypoints - visited_waypoints)
@@ -43,40 +43,52 @@ class WaypointMap:
         self.cache[key] = smallest_distance
         return smallest_distance
 
-    def distance_from(self, start, excluding):
+    def dynamic_tsp(self, waypoints) -> Dict[Tuple[int, int], int]:
         """
-        Calculates the distance from a start waypoints, via all other waypoints
-        (except those in 'excluding'), to the goal position.
-
-        This function is memoized, so it call be called frequently.
+        Calculates the minimal path from each way points to the goal, via all
+        the other waypoints.
         """
 
-        key = start, frozenset(excluding)
-        if key in self.shared_cache:
-            return self.shared_cache[key]
+        ordered_waypoints = list(waypoints)
+        n = len(ordered_waypoints)
+        all_indices = set(range(n))
 
-        to_visit = self.waypoints - excluding - {start}
-        orderings = factorial(len(to_visit))
-        logger.info(f"Solving {orderings} orderings of TSP ...")
+        memory = {}
+        queue = Queue()
 
-        smallest_distance = None
-        for order in permutations(to_visit):
-            last_waypoint = start
-            order_distance = 0
+        for index, wp in enumerate(ordered_waypoints):
+            key = (index,), index
+            wpx, wpy = wp
+            queue.put(key)
+            memory[key] = self.goal_heuristics[wpy][wpx], None
 
-            for waypoint in order:
-                lx, ly = last_waypoint
-                order_distance += self.distance_maps[waypoint][ly][lx]
-                last_waypoint = waypoint
+        while not queue.empty():
+            prev_visited, prev_last_wp = queue.get()
+            prev_dist, _ = memory[(prev_visited, prev_last_wp)]
+            to_visit = all_indices.difference(set(prev_visited))
 
-            lx, ly = last_waypoint
-            order_distance += self.goal_heuristics[ly][lx]
+            for new_last_point in to_visit:
+                new_visited = tuple(sorted(prev_visited + (new_last_point,)))
+                xa, ya = ordered_waypoints[prev_last_wp]
+                wpb = ordered_waypoints[new_last_point]
+                new_dist = prev_dist + self.distance_maps[wpb][ya][xa]
 
-            if smallest_distance is None or order_distance < smallest_distance:
-                smallest_distance = order_distance
+                new_key = new_visited, new_last_point
+                new_value = new_dist, prev_last_wp
 
-        self.shared_cache[key] = smallest_distance
-        return smallest_distance
+                if new_key not in memory:
+                    memory[new_key] = new_value
+                    queue.put(new_key)
+                else:
+                    if new_dist < memory[new_key][0]:
+                        memory[new_key] = new_value
+
+        result = {}
+        full_path = tuple(range(n))
+        for index, wp in enumerate(ordered_waypoints):
+            result[wp] = memory[(full_path, index)][0]
+
+        return result
 
     def is_waypoint(self, position):
         return position in self.waypoints
