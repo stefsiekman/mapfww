@@ -44,8 +44,8 @@ def run_bulk(name, size, agent_range, waypoint_range):
                 continue
             busy_queue.put((agents, waypoints))
 
-    workers = [Thread(target=work, args=(i, size, busy_queue, result_queue),
-                      name=f"Worker-{i}")
+    workers = [Thread(target=work, args=(i, size, busy_queue, result_queue), 
+                      daemon=True, name=f"Worker-{i}")
                for i in range(thread_number)]
 
     for worker in workers:
