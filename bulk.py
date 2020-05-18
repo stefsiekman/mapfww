@@ -12,10 +12,7 @@ from threading import Thread
 from func_timeout import func_timeout, FunctionTimedOut
 from git import Repo
 
-
-def long_task():
-    time.sleep(randint(1, 5))
-    return 0.5
+from progressive import save_generate_grid, run_single
 
 
 def work(index, busy_queue: Queue, result_queue: Queue):
@@ -23,15 +20,16 @@ def work(index, busy_queue: Queue, result_queue: Queue):
 
     while True:
         agents, waypoints = busy_queue.get(block=True)
-        start_time = time.time()
+
+        grid = save_generate_grid(agents, waypoints, 16)
         res = None
 
         try:
-            res = func_timeout(2.5, long_task)
+            res = func_timeout(10, run_single, args=(grid,))
         except FunctionTimedOut:
             pass
 
-        result_queue.put((time.time() - start_time, res))
+        result_queue.put((agents, waypoints, res))
         busy_queue.put((agents, waypoints))
 
 
@@ -55,7 +53,7 @@ def run_bulk(name, agent_range, waypoint_range):
 
     while True:
         res = result_queue.get(block=True)
-        print(f"Got result: {res}")
+        print(f"{name}, {res[0]}, {res[1]}, {res[2]}")
 
 
 def thread_count():
