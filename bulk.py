@@ -2,12 +2,11 @@
 Class for running benchmarks in bulk on some server. Results can be obtained
 from multiple sources, and the running can be stopped at any time.
 """
-import multiprocessing
+from multiprocessing import Queue, Process, cpu_count, SimpleQueue
 import os
 import time
 from queue import Queue
 from random import randint
-from threading import Thread
 
 from func_timeout import func_timeout, FunctionTimedOut
 from git import Repo
@@ -35,7 +34,7 @@ def run_bulk(name, size, agent_range, waypoint_range):
     thread_number = thread_count()
 
     busy_queue = Queue()
-    result_queue = Queue()
+    result_queue = SimpleQueue()
 
     # Populate with all combinations within range
     for agents in range(agent_range[0], agent_range[1] + 1):
@@ -44,8 +43,7 @@ def run_bulk(name, size, agent_range, waypoint_range):
                 continue
             busy_queue.put((agents, waypoints))
 
-    workers = [Thread(target=work, args=(i, size, busy_queue, result_queue), 
-                      daemon=True, name=f"Worker-{i}")
+    workers = [Process(target=work, args=(i, size, busy_queue, result_queue))
                for i in range(thread_number)]
 
     for worker in workers:
@@ -59,7 +57,7 @@ def run_bulk(name, size, agent_range, waypoint_range):
     runs = 0
     with open(result_file, "a") as file:
         while True:
-            res = result_queue.get(block=True)
+            res = result_queue.get()
             res_time = res[4] if res[4] is not None else ""
             file.write(f"{name},{res[0]},{res[1]},{res[2]},{res[3]},{res[4]}\n")
             file.flush()
@@ -68,7 +66,7 @@ def run_bulk(name, size, agent_range, waypoint_range):
 
 
 def thread_count():
-    cores = multiprocessing.cpu_count()
+    cores = cpu_count()
     print(f"This system has {cores} cores")
     inp = input("Reserve cores [0]: ")
     reserves = int(inp) if inp is not "" else 0
