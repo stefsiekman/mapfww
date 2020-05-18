@@ -1,3 +1,4 @@
+import time
 from queue import Queue
 from math import factorial
 from typing import Tuple, Set, Optional, Dict
@@ -32,11 +33,13 @@ class WaypointMap:
         x, y = position
 
         if len(visited_waypoints) != len(self.waypoints):
-            path_lengths = self.dynamic_tsp(self.waypoints - visited_waypoints)
+            to_visit = self.waypoints - visited_waypoints
+            path_lengths = self.dynamic_tsp(to_visit)
             smallest_distance = min(path_lengths[wp] +
                                     self.distance_maps[wp][y][x]
                                     for wp in
                                     self.waypoints - visited_waypoints)
+
         else:
             smallest_distance = self.goal_heuristics[y][x]
 
@@ -48,6 +51,10 @@ class WaypointMap:
         Calculates the minimal path from each way points to the goal, via all
         the other waypoints.
         """
+
+        key = frozenset(waypoints)
+        if key in self.shared_cache:
+            return self.shared_cache[key]
 
         ordered_waypoints = list(waypoints)
         n = len(ordered_waypoints)
@@ -88,6 +95,7 @@ class WaypointMap:
         for index, wp in enumerate(ordered_waypoints):
             result[wp] = memory[(full_path, index)][0]
 
+        self.shared_cache = result
         return result
 
     def is_waypoint(self, position):
