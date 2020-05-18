@@ -27,7 +27,7 @@ def work(index, size, busy_queue: Queue, result_queue: Queue):
         except FunctionTimedOut:
             pass
 
-        result_queue.put((agents, waypoints, size, res))
+        result_queue.put((index, agents, waypoints, size, res))
         busy_queue.put((agents, waypoints))
 
 
@@ -54,14 +54,14 @@ def run_bulk(name, size, agent_range, waypoint_range):
     result_file = "runs.csv"
     if not os.path.exists(result_file):
         with open(result_file, "w") as file:
-            file.write("Version,Agents,Waypoints,Size,Time\n")
+            file.write("Version,Thread,Agents,Waypoints,Size,Time\n")
 
     runs = 0
     with open(result_file, "a") as file:
         while True:
             res = result_queue.get(block=True)
-            res_time = res[3] if res[3] is not None else ""
-            file.write(f"{name},{res[0]},{res[1]},{res[2]},{res[3]}\n")
+            res_time = res[4] if res[4] is not None else ""
+            file.write(f"{name},{res[0]},{res[1]},{res[2]},{res[3]},{res[4]}\n")
             file.flush()
             runs += 1
             print(f"\rRan {runs} benchmarks", end="", flush=True)
