@@ -46,14 +46,6 @@ class WaypointMap:
         self.cache[key] = smallest_distance
         return smallest_distance
 
-    def furthest_waypoint(self, position, excluding: Set[Tuple[int, int]]):
-        if self.are_all(excluding):
-            return None
-
-        x, y = position
-        return max(self.waypoints - excluding,
-                   key=lambda wp: self.distance_maps[wp][y][x])
-
     def is_waypoint(self, position):
         return position in self.waypoints
 
