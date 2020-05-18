@@ -6,9 +6,16 @@ import multiprocessing
 import os
 import time
 from queue import Queue
+from random import randint
 from threading import Thread
 
+from func_timeout import func_timeout
 from git import Repo
+
+
+def long_task():
+    time.sleep(randint(1, 5))
+    return 0.5
 
 
 def work(index, busy_queue: Queue, result_queue: Queue):
@@ -16,9 +23,9 @@ def work(index, busy_queue: Queue, result_queue: Queue):
 
     while True:
         agents, waypoints = busy_queue.get(block=True)
-        print(f"[Worker {index}] Running with {agents}, {waypoints}")
-        time.sleep(2)
-        print(f"[Worker {index}] done")
+        start_time = time.time()
+        res = func_timeout(2.5, long_task)
+        result_queue.put((time.time() - start_time, res))
         busy_queue.put((agents, waypoints))
 
 
@@ -40,7 +47,9 @@ def run_bulk(name, agent_range, waypoint_range):
     for worker in workers:
         worker.start()
 
-    # Collect results...
+    while True:
+        res = result_queue.get(block=True)
+        print(f"Got result: {res}")
 
 
 def thread_count():
