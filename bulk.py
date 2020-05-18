@@ -16,9 +16,12 @@ def run_bulk(name, agent_range, waypoint_range):
 def thread_count():
     cores = multiprocessing.cpu_count()
     print(f"This system has {cores} cores")
-    inp = input("Reserve cores [0]:")
+    inp = input("Reserve cores [0]: ")
     reserves = int(inp) if inp is not "" else 0
     assert 0 <= reserves < cores, "Valid reserve count"
+
+    using = cores - reserves
+    print(f"Benchmarks will be run on {using} cores")
 
     return cores - reserves
 
