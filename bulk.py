@@ -42,7 +42,7 @@ def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
     while True:
         agents, waypoints = busy_queue.get()
 
-        grid_id, grid_data = db.get_grid(version_id, computer_id, index,
+        run_id, grid_data = db.get_grid(version_id, computer_id, index,
                                         time_limit, agents, waypoints, size,
                                         20)
         res = None
@@ -56,7 +56,7 @@ def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
         except Exception as e:
             error = e
 
-        result_queue.put((index, grid_id, res, error))
+        result_queue.put((index, run_id, res, error))
         busy_queue.put((agents, waypoints))
 
 
@@ -86,11 +86,11 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
 
     runs = 0
     while True:
-        thread_index, grid_id, time, error = result_queue.get()
-        db.complete_run(version_id, computer_id, grid_id, time)
+        thread_index, run_id, time, error = result_queue.get()
+        db.complete_run(run_id, time)
         runs += 1
-        print(f"[Process {thread_index}] Benchmark #{runs} on grid"
-              f" #{grid_id} ", end="")
+        print(f"[Process {thread_index}] Benchmark #{runs} on "
+              f"{db.grid_info(run_id)} ", end="")
         if time is not None:
             print(f"in {round(time,2)} sec", end="")
         else:
