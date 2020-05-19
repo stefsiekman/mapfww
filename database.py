@@ -73,6 +73,7 @@ class Database:
                                      "AND g.width=? AND g.height = ? "
                                      "AND g.infill = ? AND g.agents = ? "
                                      "AND g.waypoints = ? "
+                                     "ORDER BY r.finished DESC "
                                      "LIMIT 1",
                                      (version_id, computer_id, size, size,
                                       infill, agents, waypoints)).fetchone()
