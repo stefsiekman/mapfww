@@ -90,9 +90,9 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
 
     runs = 0
     while True:
-        thread_index, run_id, time, error, overhead = result_queue.get()
+        thread_index, run_id, runtime, error, overhead = result_queue.get()
         start_time = time.time()
-        db.complete_run(run_id, time)
+        db.complete_run(run_id, runtime)
         grid_info = db.grid_info(run_id)
         overhead += time.time() - start_time
 
@@ -100,8 +100,8 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
 
         print(f"[Process {thread_index}] Benchmark #{runs} on "
               f"{grid_info} ", end="")
-        if time is not None:
-            print(f"in {round(time,2)} sec", end="")
+        if runtime is not None:
+            print(f"in {round(runtime,2)} sec", end="")
         else:
             print("timeout", end="")
         print(f" WITH ERROR: {error}" if error is not None else "", end="")
