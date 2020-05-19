@@ -2,11 +2,9 @@
 Class for running benchmarks in bulk on some server. Results can be obtained
 from multiple sources, and the running can be stopped at any time.
 """
-from multiprocessing import Queue, Process, cpu_count, SimpleQueue
+from multiprocessing import Queue, Process, cpu_count, SimpleQueue, Lock
 import os
-import time
 from queue import Queue
-from random import randint
 
 from func_timeout import func_timeout, FunctionTimedOut
 from git import Repo
@@ -14,11 +12,19 @@ from git import Repo
 from progressive import save_generate_grid, run_single
 
 
-def work(index, size, busy_queue: Queue, result_queue: Queue):
+def create_grid(lock: Lock, agents, waypoints, size):
+    lock.aquire()
+    grid = save_generate_grid(agents, waypoints, size)
+    lock.release()
+
+    return grid
+
+
+def work(index, size, busy_queue: Queue, result_queue: Queue, grid_lock: Lock):
     while True:
         agents, waypoints = busy_queue.get(block=True)
 
-        grid = save_generate_grid(agents, waypoints, size)
+        grid = create_grid(grid_lock, agents, waypoints, size)
         res = None
 
         try:
@@ -33,6 +39,7 @@ def work(index, size, busy_queue: Queue, result_queue: Queue):
 def run_bulk(name, size, agent_range, waypoint_range):
     thread_number = thread_count()
 
+    grid_lock = Lock()
     busy_queue = Queue()
     result_queue = SimpleQueue()
 
@@ -43,7 +50,8 @@ def run_bulk(name, size, agent_range, waypoint_range):
                 continue
             busy_queue.put((agents, waypoints))
 
-    workers = [Process(target=work, args=(i, size, busy_queue, result_queue))
+    workers = [Process(target=work, args=(i, size, busy_queue, result_queue,
+                                          grid_lock))
                for i in range(thread_number)]
 
     for worker in workers:
@@ -59,7 +67,8 @@ def run_bulk(name, size, agent_range, waypoint_range):
         while True:
             res = result_queue.get()
             res_time = res[4] if res[4] is not None else ""
-            file.write(f"{name},{res[0]},{res[1]},{res[2]},{res[3]},{res[4]}\n")
+            file.write(
+                f"{name},{res[0]},{res[1]},{res[2]},{res[3]},{res[4]}\n")
             file.flush()
             runs += 1
             print(f"\rRan {runs} benchmarks", end="", flush=True)
