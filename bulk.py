@@ -2,9 +2,8 @@
 Class for running benchmarks in bulk on some server. Results can be obtained
 from multiple sources, and the running can be stopped at any time.
 """
-from multiprocessing import Queue, Process, cpu_count, SimpleQueue, Lock
+from multiprocessing import Process, cpu_count, SimpleQueue, Lock
 import os
-from queue import Queue
 
 from func_timeout import func_timeout, FunctionTimedOut
 from git import Repo
@@ -20,9 +19,10 @@ def create_grid(lock: Lock, agents, waypoints, size):
     return grid
 
 
-def work(index, size, busy_queue: Queue, result_queue: Queue, grid_lock: Lock):
+def work(index, size, busy_queue: SimpleQueue, result_queue: SimpleQueue,
+         grid_lock: Lock):
     while True:
-        agents, waypoints = busy_queue.get(block=True)
+        agents, waypoints = busy_queue.get()
 
         grid = create_grid(grid_lock, agents, waypoints, size)
         res = None
@@ -40,7 +40,7 @@ def run_bulk(name, size, agent_range, waypoint_range):
     thread_number = thread_count()
 
     grid_lock = Lock()
-    busy_queue = Queue()
+    busy_queue = SimpleQueue()
     result_queue = SimpleQueue()
 
     # Populate with all combinations within range
