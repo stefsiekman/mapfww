@@ -22,7 +22,7 @@ def parse_grid(grid_data) -> Grid:
                 grid.add_wall(x, y)
 
     for start, goal in zip(grid_data["starts"], grid_data["goals"]):
-        grid.add_agent(start, goal)
+        grid.add_agent(tuple(start), tuple(goal))
 
     for agent, waypoints in enumerate(grid_data["waypoints"]):
         for x, y in waypoints:
@@ -46,14 +46,17 @@ def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
                                         time_limit, agents, waypoints, size,
                                         20)
         res = None
+        error = None
 
         try:
             res = func_timeout(time_limit, run_single_from_data,
                                args=(grid_data,))
         except FunctionTimedOut:
             pass
+        except Exception as e:
+            error = e
 
-        result_queue.put((index, grid_id, res))
+        result_queue.put((index, grid_id, res, error))
         busy_queue.put((agents, waypoints))
 
 
@@ -83,10 +86,11 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
 
     runs = 0
     while True:
-        thread_index, grid_id, time = result_queue.get()
+        thread_index, grid_id, time, error = result_queue.get()
         db.complete_run(version_id, computer_id, grid_id, time)
         runs += 1
-        print(f"Benchmark #{runs} on grid #{grid_id} in {time} s")
+        print(f"Benchmark #{runs} on grid #{grid_id} in {time} s", end="")
+        print(f" WITH ERROR: {error}" if error is not None else "")
 
 
 def thread_count():
