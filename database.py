@@ -41,12 +41,25 @@ class Database:
     def get_version_id(self, hex: str) -> int:
         return self._get_identifying_id("versions", "hex", hex)
 
-    def get_grid(self, version_id, computer_id, agents, waypoints, size,
-                 infill):
+    def _create_run(self, data):
+        cur = self.conn.cursor()
+        cur.execute("INSERT INTO runs "
+                    "(version_id, grid_id, computer_id, thread, time_limit) "
+                    "VALUES (?,?,?,?,?)", data)
+        run_id = cur.lastrowid
+        cur.close()
+        self.conn.commit()
+
+        return run_id
+
+    def get_grid(self, version_id, computer_id, thread, time_limit, agents,
+                 waypoints, size, infill):
         """
         Tries to find an existing grid to test on with the given parameters,
         that this version has not yet ran on. If such version does not exist,
         a new grid will be created.
+
+        Creates a new run entry, of which the ID will be returned.
         """
 
         self.lock.acquire()
@@ -69,7 +82,8 @@ class Database:
             grid = Grid(size, size)
             grid_data = json.loads(grid_row[1])
             self.lock.release()
-            return grid_row[0], grid_data
+            return self._create_run((version_id, grid_row[0], computer_id,
+                                     thread, time_limit)), grid_data
 
         # Create brand new instance
         grid = save_generate_grid(agents, waypoints, size)
@@ -92,7 +106,5 @@ class Database:
         self.conn.commit()
         self.lock.release()
 
-        print("Returning:")
-        print(grid_data)
-
-        return grid_id, grid_data
+        return self._create_run((version_id, grid_id, computer_id,
+                                 thread, time_limit)), grid_data

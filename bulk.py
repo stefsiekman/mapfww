@@ -35,17 +35,21 @@ def run_single_from_data(grid_data) -> float:
     return run_single(parse_grid(grid_data))
 
 
-def work(version_id, computer_id, index, size, busy_queue: SimpleQueue, result_queue: SimpleQueue,
+def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
+         result_queue: SimpleQueue,
          db: Database):
+    time_limit = 10
     while True:
         agents, waypoints = busy_queue.get()
 
-        grid_id, grid_data = db.get_grid(version_id, computer_id, agents,
-                                         waypoints, size, 20)
+        run_id, grid_data = db.get_grid(version_id, computer_id, index,
+                                        time_limit, agents, waypoints, size,
+                                        20)
         res = None
 
         try:
-            res = func_timeout(10, run_single_from_data, args=(grid_data,))
+            res = func_timeout(time_limit, run_single_from_data,
+                               args=(grid_data,))
         except FunctionTimedOut:
             pass
 
