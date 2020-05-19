@@ -50,7 +50,7 @@ class Database:
         cur.close()
         self.conn.commit()
 
-        return run_id
+        return data[1]
 
     def get_grid(self, version_id, computer_id, thread, time_limit, agents,
                  waypoints, size, infill):
@@ -67,7 +67,8 @@ class Database:
         grid_row = self.conn.execute("SELECT id, data FROM grids g "
                                      "LEFT OUTER JOIN runs r "
                                      "ON r.grid_id = g.id "
-                                     "WHERE r.grid_id IS NULL "
+                                     "WHERE "
+                                     "(r.grid_id IS NULL OR r.finished = 0)"
                                      "AND r.version_id = ? "
                                      "AND r.computer_id = ?"
                                      "AND g.width=? AND g.height = ? "
@@ -108,3 +109,12 @@ class Database:
 
         return self._create_run((version_id, grid_id, computer_id,
                                  thread, time_limit)), grid_data
+
+    def complete_run(self, version_id, computer_id, grid_id, time):
+        self.lock.acquire()
+        self.conn.execute("UPDATE runs SET runtime = ?, finished = 1 "
+                          "WHERE version_id = ? AND computer_id = ? "
+                          "AND grid_id = ?",
+                          (time, version_id, computer_id, grid_id))
+        self.conn.commit()
+        self.lock.release()

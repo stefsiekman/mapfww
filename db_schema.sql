@@ -30,5 +30,7 @@ CREATE TABLE IF NOT EXISTS runs
     time_limit  DECIMAL  NOT NULL,
     runtime     DECIMAL,
     finished    INTEGER  NOT NULL DEFAULT 0,
-    timestamp   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    timestamp   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (version_id, grid_id, computer_id)
 );

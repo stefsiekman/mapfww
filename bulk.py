@@ -42,7 +42,7 @@ def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
     while True:
         agents, waypoints = busy_queue.get()
 
-        run_id, grid_data = db.get_grid(version_id, computer_id, index,
+        grid_id, grid_data = db.get_grid(version_id, computer_id, index,
                                         time_limit, agents, waypoints, size,
                                         20)
         res = None
@@ -53,7 +53,7 @@ def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
         except FunctionTimedOut:
             pass
 
-        result_queue.put((index, agents, waypoints, size, res))
+        result_queue.put((index, grid_id, res))
         busy_queue.put((agents, waypoints))
 
 
@@ -81,21 +81,12 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
     for worker in workers:
         worker.start()
 
-    result_file = "runs.csv"
-    if not os.path.exists(result_file):
-        with open(result_file, "w") as file:
-            file.write("Version,Thread,Agents,Waypoints,Size,Time\n")
-
     runs = 0
-    with open(result_file, "a") as file:
-        while True:
-            res = result_queue.get()
-            res_time = res[4] if res[4] is not None else ""
-            file.write(
-                f"{name},{res[0]},{res[1]},{res[2]},{res[3]},{res[4]}\n")
-            file.flush()
-            runs += 1
-            print(f"\rRan {runs} benchmarks", end="", flush=True)
+    while True:
+        thread_index, grid_id, time = result_queue.get()
+        db.complete_run(version_id, computer_id, grid_id, time)
+        runs += 1
+        print(f"Benchmark #{runs} on grid #{grid_id} in {time} s")
 
 
 def thread_count():
