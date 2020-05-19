@@ -64,7 +64,7 @@ class Database:
 
         self.lock.acquire()
 
-        grid_row = self.conn.execute("SELECT id, data FROM grids g "
+        grid_row = self.conn.execute("SELECT g.id, data FROM grids g "
                                      "LEFT OUTER JOIN runs r "
                                      "ON r.grid_id = g.id AND version_id = ? "
                                      "AND computer_id = ? "
