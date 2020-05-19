@@ -9,24 +9,43 @@ from func_timeout import func_timeout, FunctionTimedOut
 from git import Repo
 
 from database import Database
-from progressive import save_generate_grid, run_single
+from grid import Grid
+from progressive import run_single
 
 
-def create_grid(database: Database, agents, waypoints, size):
-    grid = save_generate_grid(agents, waypoints, size)
+def parse_grid(grid_data) -> Grid:
+    grid = Grid(grid_data["width"], grid_data["height"])
+
+    for y in range(grid.h):
+        for x in range(grid.w):
+            if grid_data["walls"][y][x]:
+                grid.add_wall(x, y)
+
+    for start, goal in zip(grid_data["starts"], grid_data["goals"]):
+        grid.add_agent(start, goal)
+
+    for agent, waypoints in enumerate(grid_data["waypoints"]):
+        for x, y in waypoints:
+            grid.add_waypoint(agent, x, y)
+
     return grid
 
 
-def work(index, size, busy_queue: SimpleQueue, result_queue: SimpleQueue,
+def run_single_from_data(grid_data) -> float:
+    return run_single(parse_grid(grid_data))
+
+
+def work(version_id, computer_id, index, size, busy_queue: SimpleQueue, result_queue: SimpleQueue,
          db: Database):
     while True:
         agents, waypoints = busy_queue.get()
 
-        grid = create_grid(db, agents, waypoints, size)
+        grid_id, grid_data = db.get_grid(version_id, computer_id, agents,
+                                         waypoints, size, 20)
         res = None
 
         try:
-            res = func_timeout(10, run_single, args=(grid,))
+            res = func_timeout(10, run_single_from_data, args=(grid_data,))
         except FunctionTimedOut:
             pass
 
@@ -34,10 +53,13 @@ def work(index, size, busy_queue: SimpleQueue, result_queue: SimpleQueue,
         busy_queue.put((agents, waypoints))
 
 
-def run_bulk(name, size, agent_range, waypoint_range):
+def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
     thread_number = thread_count()
-
     db = Database()
+
+    version_id = db.get_version_id(version_name)
+    computer_id = db.get_computer_id(computer_name)
+
     busy_queue = SimpleQueue()
     result_queue = SimpleQueue()
 
@@ -48,8 +70,8 @@ def run_bulk(name, size, agent_range, waypoint_range):
                 continue
             busy_queue.put((agents, waypoints))
 
-    workers = [Process(target=work, args=(i, size, busy_queue,
-                                          result_queue, db))
+    workers = [Process(target=work, args=(version_id, computer_id, i, size,
+                                          busy_queue, result_queue, db))
                for i in range(thread_number)]
 
     for worker in workers:
@@ -75,8 +97,7 @@ def run_bulk(name, size, agent_range, waypoint_range):
 def thread_count():
     cores = cpu_count()
     print(f"This system has {cores} cores")
-    inp = input("Reserve cores [0]: ")
-    reserves = int(inp) if inp is not "" else 0
+    reserves = int(input("Reserve cores [1]: ") or 1)
     assert 0 <= reserves < cores, "Valid reserve count"
 
     using = cores - reserves
@@ -101,12 +122,14 @@ if __name__ == "__main__":
         print("Commit all the code changes first")
         exit()
 
+    computer_label = input("Label this computer [iMac]: ") or "iMac"
+
     min_agents = int(input("Min # agents [1]: ") or 1)
     max_agents = int(input("Max # agents [10]: ") or 10)
     min_waypoints = int(input("Min # waypoints [0]: ") or 0)
     max_waypoints = int(input("Max # waypoints [10]: ") or 10)
     grid_size = int(input("Grid size [16]: ") or 16)
 
-    run_bulk(head_hex, grid_size,
+    run_bulk(head_hex, computer_label, grid_size,
              (min_agents, max_agents),
              (min_waypoints, max_waypoints))

@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS grids
     agents    INTEGER NOT NULL,
     waypoints INTEGER NOT NULL,
     infill    INTEGER NOT NULL,
-    walls     TEXT    NOT NULL
+    data      TEXT    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS runs
@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS runs
     grid_id     INTEGER  NOT NULL REFERENCES grids (id) ON DELETE CASCADE ON UPDATE CASCADE,
     computer_id INTEGER  NOT NULL REFERENCES computers (id) ON DELETE SET NULL ON UPDATE CASCADE,
     thread      INTEGER  NOT NULL,
-    runtime     DECIMAL  NOT NULL,
+    time_limit  DECIMAL  NOT NULL,
+    runtime     DECIMAL,
+    finished    INTEGER  NOT NULL DEFAULT 0,
     timestamp   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
