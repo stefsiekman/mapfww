@@ -8,3 +8,4 @@ reports/
 Client_library.py
 *.swp
 runs.csv
+runs.sqlite
