@@ -94,7 +94,7 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
         if time is not None:
             print(f"in {round(time,2)} sec", end="")
         else:
-            print("timeout")
+            print("timeout", end="")
         print(f" WITH ERROR: {error}" if error is not None else "")
 
 

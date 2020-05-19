@@ -66,11 +66,10 @@ class Database:
 
         grid_row = self.conn.execute("SELECT id, data FROM grids g "
                                      "LEFT OUTER JOIN runs r "
-                                     "ON r.grid_id = g.id "
+                                     "ON r.grid_id = g.id AND version_id = ? "
+                                     "AND computer_id = ? "
                                      "WHERE "
                                      "(r.grid_id IS NULL OR r.finished = 0)"
-                                     "AND r.version_id = ? "
-                                     "AND r.computer_id = ?"
                                      "AND g.width=? AND g.height = ? "
                                      "AND g.infill = ? AND g.agents = ? "
                                      "AND g.waypoints = ? "
