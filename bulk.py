@@ -2,6 +2,7 @@
 Class for running benchmarks in bulk on some server. Results can be obtained
 from multiple sources, and the running can be stopped at any time.
 """
+import time
 from multiprocessing import Process, cpu_count, SimpleQueue, Lock
 import os
 
@@ -42,9 +43,12 @@ def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
     while True:
         agents, waypoints = busy_queue.get()
 
+        start_time = time.time()
         run_id, grid_data = db.get_grid(version_id, computer_id, index,
                                         time_limit, agents, waypoints, size,
                                         20)
+        overhead = time.time() - start_time
+
         res = None
         error = None
 
@@ -56,7 +60,7 @@ def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
         except Exception as e:
             error = e
 
-        result_queue.put((index, run_id, res, error))
+        result_queue.put((index, run_id, res, error, overhead))
         busy_queue.put((agents, waypoints))
 
 
@@ -86,16 +90,23 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
 
     runs = 0
     while True:
-        thread_index, run_id, time, error = result_queue.get()
+        thread_index, run_id, time, error, overhead = result_queue.get()
+        start_time = time.time()
         db.complete_run(run_id, time)
+        grid_info = db.grid_info(run_id)
+        overhead += time.time() - start_time
+
         runs += 1
+
         print(f"[Process {thread_index}] Benchmark #{runs} on "
-              f"{db.grid_info(run_id)} ", end="")
+              f"{grid_info} ", end="")
         if time is not None:
             print(f"in {round(time,2)} sec", end="")
         else:
             print("timeout", end="")
-        print(f" WITH ERROR: {error}" if error is not None else "")
+        print(f" WITH ERROR: {error}" if error is not None else "", end="")
+
+        print(f" (OH {round(overhead * 1000)} ms)")
 
 
 def thread_count():
