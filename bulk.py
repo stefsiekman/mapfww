@@ -8,23 +8,21 @@ import os
 from func_timeout import func_timeout, FunctionTimedOut
 from git import Repo
 
+from database import Database
 from progressive import save_generate_grid, run_single
 
 
-def create_grid(lock: Lock, agents, waypoints, size):
-    lock.acquire()
+def create_grid(database: Database, agents, waypoints, size):
     grid = save_generate_grid(agents, waypoints, size)
-    lock.release()
-
     return grid
 
 
 def work(index, size, busy_queue: SimpleQueue, result_queue: SimpleQueue,
-         grid_lock: Lock):
+         db: Database):
     while True:
         agents, waypoints = busy_queue.get()
 
-        grid = create_grid(grid_lock, agents, waypoints, size)
+        grid = create_grid(db, agents, waypoints, size)
         res = None
 
         try:
@@ -39,7 +37,7 @@ def work(index, size, busy_queue: SimpleQueue, result_queue: SimpleQueue,
 def run_bulk(name, size, agent_range, waypoint_range):
     thread_number = thread_count()
 
-    grid_lock = Lock()
+    db = Database()
     busy_queue = SimpleQueue()
     result_queue = SimpleQueue()
 
@@ -50,8 +48,8 @@ def run_bulk(name, size, agent_range, waypoint_range):
                 continue
             busy_queue.put((agents, waypoints))
 
-    workers = [Process(target=work, args=(i, size, busy_queue, result_queue,
-                                          grid_lock))
+    workers = [Process(target=work, args=(i, size, busy_queue,
+                                          result_queue, db))
                for i in range(thread_number)]
 
     for worker in workers:
