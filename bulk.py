@@ -13,7 +13,7 @@ from progressive import save_generate_grid, run_single
 
 
 def create_grid(lock: Lock, agents, waypoints, size):
-    lock.aquire()
+    lock.acquire()
     grid = save_generate_grid(agents, waypoints, size)
     lock.release()
 
@@ -103,11 +103,11 @@ if __name__ == "__main__":
         print("Commit all the code changes first")
         exit()
 
-    min_agents = int(input("Min # agents: "))
-    max_agents = int(input("Max # agents: "))
-    min_waypoints = int(input("Min # waypoints: "))
-    max_waypoints = int(input("Max # waypoints: "))
-    grid_size = int(input("Grid size: "))
+    min_agents = int(input("Min # agents [1]: ") or 1)
+    max_agents = int(input("Max # agents [10]: ") or 10)
+    min_waypoints = int(input("Min # waypoints [0]: ") or 0)
+    max_waypoints = int(input("Max # waypoints [10]: ") or 10)
+    grid_size = int(input("Grid size [16]: ") or 16)
 
     run_bulk(head_hex, grid_size,
              (min_agents, max_agents),
