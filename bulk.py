@@ -89,7 +89,12 @@ def run_bulk(version_name, computer_name, size, agent_range, waypoint_range):
         thread_index, grid_id, time, error = result_queue.get()
         db.complete_run(version_id, computer_id, grid_id, time)
         runs += 1
-        print(f"Benchmark #{runs} on grid #{grid_id} in {time} s", end="")
+        print(f"[Process {thread_index}] Benchmark #{runs} on grid"
+              f" #{grid_id} ", end="")
+        if time is not None:
+            print(f"in {round(time,2)} sec", end="")
+        else:
+            print("timeout")
         print(f" WITH ERROR: {error}" if error is not None else "")
 
 
