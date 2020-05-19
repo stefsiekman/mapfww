@@ -122,7 +122,7 @@ class Database:
         row = self.conn.execute("SELECT width, height, agents, waypoints, "
                                 "infill FROM grids g "
                                 "JOIN runs r ON r.grid_id = g.id "
-                                "WHERE r.id = ?", (run_id,))
+                                "WHERE r.id = ?", (run_id,)).fetchone()
         self.lock.release()
 
         width, height, agents, waypoints, infill = row
