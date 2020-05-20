@@ -39,7 +39,7 @@ def run_single_from_data(grid_data) -> float:
 def work(version_id, computer_id, index, size, busy_queue: SimpleQueue,
          result_queue: SimpleQueue,
          db: Database):
-    time_limit = 60
+    time_limit = 10
     while True:
         agents, waypoints = busy_queue.get()
 
