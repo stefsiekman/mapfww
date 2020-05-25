@@ -52,13 +52,16 @@ class WaypointMap:
         the other waypoints.
         """
 
-        key = frozenset(waypoints)
-        if key in self.shared_cache:
-            return self.shared_cache[key]
+        cache_key = tuple(sorted(waypoints))
+        if cache_key in self.shared_cache:
+            return self.shared_cache[cache_key]
 
         ordered_waypoints = list(waypoints)
         n = len(ordered_waypoints)
         all_indices = set(range(n))
+
+        if n > 11:
+            print(f"Solving TSP of n = {n}... {cache_key}")
 
         memory = {}
         queue = Queue()
@@ -95,7 +98,10 @@ class WaypointMap:
         for index, wp in enumerate(ordered_waypoints):
             result[wp] = memory[(full_path, index)][0]
 
-        self.shared_cache = result
+        if n > 11:
+            print(f"done {len(memory.keys())} keys")
+
+        self.shared_cache[cache_key] = result
         return result
 
     def is_waypoint(self, position):

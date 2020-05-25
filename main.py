@@ -10,7 +10,7 @@ from solver import solve_od_id
 
 def run_for(id, for_real):
     benchmark = MapfwBenchmarker("ffA1D303A8D47e39", id,
-                                 "A*+OD+ID", "different cost function", not for_real)
+                                 "A*+OD+ID", "correct TSP cache", not for_real)
 
     logger.start(info=benchmark.debug)
 
@@ -60,6 +60,5 @@ if __name__ == "__main__":
     for_real = input("For real (y/[n]): ")
     run_for(bid, for_real == 'y')
     # run_for([31, 32], False)
-    # for id in [7, 11, 5, 12, 18, 21, 22, 23]:
-    # print(mapfw.get_all_benchmarks([8, 9, 10]))
+    # for id in [55, 27, 33, 62]:
     #     run_for(id, True)
