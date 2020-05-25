@@ -5,12 +5,13 @@ from edge import Edge
 
 class Node:
 
-    def __init__(self, grid, positions, moves, cost, conflicts, taken_edges,
-                 parent=None, visited_waypoints=None):
+    def __init__(self, grid, positions, moves, cost, goal_waits, conflicts,
+                 taken_edges, parent=None, visited_waypoints=None):
         self.grid = grid
         self.positions = positions
         self.moves = moves
         self.cost = cost
+        self.goal_waits: List[int] = goal_waits or [0] * grid.agents
         self.conflicts = conflicts
         self.taken_edges = taken_edges
         self.parent = parent
@@ -52,13 +53,6 @@ class Node:
         agent = self.moves.index(None)
         position = self.positions[agent]
 
-        if self.agent_done(agent) and position not in self.moves:
-            new_moves = self.moves[:]
-            new_moves[agent] = position
-            return [Node(self.grid, self.positions, new_moves, self.cost,
-                         self.conflicts, self.taken_edges, self,
-                         self.visited_waypoints)]
-
         new_nodes = []
 
         for neighbour in self.grid.valid_neighbours(position):
@@ -92,9 +86,23 @@ class Node:
                                          new_visited_waypoints]
                 new_visited_waypoints[agent].add(neighbour)
 
+            # Agents can wait at goal for no cost, unless they will move again
+            # in the future, so we need to keep track of this 'credit'
+            additional_cost = 1
+            new_goal_waits = self.goal_waits
+            if self.agent_done(agent):
+                additional_cost = 0
+                new_goal_waits = self.goal_waits[:]
+                new_goal_waits[agent] += 1
+            elif self.goal_waits[agent]:
+                additional_cost = self.goal_waits[agent] +1
+                new_goal_waits = self.goal_waits[:]
+                new_goal_waits[agent] = 0
+
             new_node = Node(self.grid, self.positions, new_moves,
-                            self.cost + 1, new_conflicts, new_taken_edges,
-                            self, new_visited_waypoints)
+                            self.cost + additional_cost, new_goal_waits,
+                            new_conflicts, new_taken_edges, self,
+                            new_visited_waypoints)
             new_nodes.append(new_node)
 
         return new_nodes
