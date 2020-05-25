@@ -94,7 +94,7 @@ class Database:
             "starts": grid.starts,
             "goals": grid.goals,
             "waypoints": [list(map.waypoints) for map in grid.waypoints],
-            "walls": grid.walls,
+            "walls": [[int(t) for t in row] for row in grid.walls],
         }
 
         cur = self.conn.cursor()
