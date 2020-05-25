@@ -1,5 +1,6 @@
 from time import time
 
+import mapfw
 from mapfw import MapfwBenchmarker
 
 import logger
@@ -58,5 +59,7 @@ if __name__ == "__main__":
     bid = int(input("Benchmark ID: "))
     for_real = input("For real (y/[n]): ")
     run_for(bid, for_real == 'y')
+    # run_for([31, 32], False)
     # for id in [7, 11, 5, 12, 18, 21, 22, 23]:
+    # print(mapfw.get_all_benchmarks([8, 9, 10]))
     #     run_for(id, True)
