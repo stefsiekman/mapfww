@@ -40,7 +40,7 @@ class Grid:
         self.waypoints[agent].add_waypoint(x, y)
 
     def root_node(self):
-        return Node(self, self.starts[:], [None] * self.agents, 0, 0, [])
+        return Node(self, self.starts[:], [None] * self.agents, 0, None, 0, [])
 
     def is_move_illegal(self, from_time, move_from, move_to):
         if self.illegal_moves is None:
