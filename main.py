@@ -25,24 +25,17 @@ def solver(problem: Problem) -> List:
         for waypoint in waypoints:
             grid.add_waypoint(agent, waypoint[0], waypoint[1])
 
-    print(f"\nParsing done in "
-          f"{round((time() - parse_start_time) * 1000, 2)} ms")
-
-    print("Solving...")
-
     start_time = time()
     solution = solve_od_id(grid)
     time_taken = round((time() - start_time) * 1000)
-
-    print(f"Done in {time_taken} ms")
 
     return solution.to_json()
 
 
 def run_for(id, for_real):
-    benchmark = MapfwBenchmarker("8fB2CDcaa352C2bf", id,
+    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", id,
                                  "A*+OD+ID", "correct TSP cache", not for_real,
-                                 solver)
+                                 solver, cores=3)
     logger.start(info=benchmark.debug)
     benchmark.run()
     logger.stop()
