@@ -1,4 +1,4 @@
-mapfw==0.2.3
+mapfw==0.3.1
 func-timeout==4.3.5
 GitPython==3.1.2
 Pillow==2.2.1
