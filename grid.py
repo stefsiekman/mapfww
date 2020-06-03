@@ -37,6 +37,10 @@ class Grid:
         self.waypoints.append(WaypointMap(self, goal))
 
     def add_waypoint(self, agent, x, y):
+        # Ignore if on start/goal
+        if (x, y) in [self.starts[agent], self.goals[agent]]:
+            return
+
         self.waypoints[agent].add_waypoint(x, y)
 
     def root_node(self):
