@@ -27,9 +27,11 @@ class WaypointMap:
         a set of waypoints that have already been visited.
         """
 
-        key = position, frozenset(visited_waypoints)
-        if key in self.cache:
-            return self.cache[key]
+        key = None
+        if options["cache_h"]:
+            key = position, frozenset(visited_waypoints)
+            if key in self.cache:
+                return self.cache[key]
 
         x, y = position
 
@@ -44,7 +46,9 @@ class WaypointMap:
         else:
             smallest_distance = self.goal_heuristics[y][x]
 
-        self.cache[key] = smallest_distance
+        if options["cache_h"]:
+            self.cache[key] = smallest_distance
+
         return smallest_distance
 
     def dynamic_tsp(self, waypoints) -> Dict[Tuple[int, int], int]:
