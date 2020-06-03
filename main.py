@@ -12,7 +12,6 @@ from solver import solve_od_id
 def solver(problem: Problem) -> List:
     grid = Grid(problem.width, problem.height)
 
-    parse_start_time = time()
     for y in range(problem.height):
         for x in range(problem.width):
             if problem.grid[y][x] == 1:
@@ -25,9 +24,7 @@ def solver(problem: Problem) -> List:
         for waypoint in waypoints:
             grid.add_waypoint(agent, waypoint[0], waypoint[1])
 
-    start_time = time()
     solution = solve_od_id(grid)
-    time_taken = round((time() - start_time) * 1000)
 
     return solution.to_json()
 
