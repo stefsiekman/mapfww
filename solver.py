@@ -13,15 +13,9 @@ from pathset import PathSet
 def create_solution(grid: Grid, node: Node) -> PathSet:
     solution = PathSet(grid.agents)
 
-    if grid.agents == 8:
-        print("\nDeconstructing nodes...")
-
     # Add the positions of all the standard nodes
     while node is not None:
         if node.is_standard():
-            if grid.agents == 8:
-                print(f"=> Node g = {node.cost}, h = {node.heuristic}")
-                print(f"   {node.positions}")
             solution.prepend_positions(node.positions)
         node = node.parent
 
