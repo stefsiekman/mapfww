@@ -33,7 +33,8 @@ def solver(problem: Problem) -> List:
 
 
 def run_for(id, for_real):
-    benchmark = MapfwBenchmarker("ffA1D303A8D47e39", id,
+    api_key = open("api_key.txt", "r").read().strip()
+    benchmark = MapfwBenchmarker(api_key, id,
                                  "A*+OD+ID", "opt TSP", not for_real,
                                  solver, cores=2)
     logger.start(info=benchmark.debug)
