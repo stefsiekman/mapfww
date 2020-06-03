@@ -1,4 +1,5 @@
 import multiprocessing
+import sys
 from typing import List
 
 import click
@@ -48,9 +49,6 @@ def solver(problem: Problem, options) -> List:
               help="Number of cores to use concurrently, "
                    "requires more than one benchmark "
                    "or a progressive benchmark.")
-@click.option('--cache-heuristic', '-h', is_flag=True,
-              help="Cache the heuristic calculation with a "
-                   "(position, visited waypoints) key.")
 @click.option('--debug', '-d', is_flag=True,
               help="Run benchmark(s) as debug attempt.")
 @click.option('--verbose', '-v', is_flag=True,
@@ -68,8 +66,7 @@ def main(benchmarks, name, tsp, cores, cache_heuristic, debug, verbose,
 
     def prepped_solver(problem: Problem) -> List:
         return solver(problem, {
-            "tsp": tsp.lower(),
-            "cache_h": cache_heuristic
+            "tsp": tsp.lower()
         })
 
     api_key = open("api_key.txt", "r").read().strip()
@@ -81,4 +78,4 @@ def main(benchmarks, name, tsp, cores, cache_heuristic, debug, verbose,
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

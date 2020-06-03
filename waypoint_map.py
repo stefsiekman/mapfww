@@ -27,12 +27,6 @@ class WaypointMap:
         a set of waypoints that have already been visited.
         """
 
-        key = None
-        if options["cache_h"]:
-            key = position, frozenset(visited_waypoints)
-            if key in self.cache:
-                return self.cache[key]
-
         x, y = position
 
         if len(visited_waypoints) != len(self.waypoints):
@@ -45,9 +39,6 @@ class WaypointMap:
 
         else:
             smallest_distance = self.goal_heuristics[y][x]
-
-        if options["cache_h"]:
-            self.cache[key] = smallest_distance
 
         return smallest_distance
 
