@@ -44,7 +44,7 @@ def solver(problem: Problem, options) -> List:
                    "minimum spanning tree approximation. (Default: Dyn)")
 @click.option('--cores', '-c',
               type=click.IntRange(1, multiprocessing.cpu_count()),
-              default=max(multiprocessing.cpu_count() - 2, 1),
+              default=1,
               help="Number of cores to use concurrently, "
                    "requires more than one benchmark "
                    "or a progressive benchmark.")
