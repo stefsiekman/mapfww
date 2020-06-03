@@ -1,6 +1,7 @@
-from time import time
+import multiprocessing
 from typing import List
 
+import click
 from mapfw import MapfwBenchmarker
 from mapfw.problem import Problem
 
@@ -9,8 +10,9 @@ from grid import Grid
 from solver import solve_od_id
 
 
-def solver(problem: Problem) -> List:
+def solver(problem: Problem, options) -> List:
     grid = Grid(problem.width, problem.height)
+    grid.options = options
 
     for y in range(problem.height):
         for x in range(problem.width):
@@ -29,20 +31,48 @@ def solver(problem: Problem) -> List:
     return solution.to_json()
 
 
-def run_for(id, for_real):
+@click.command()
+@click.argument('benchmarks', required=True, nargs=-1, type=int)
+@click.option('--name', '-n',
+              type=str,
+              help="Name of the algorithm version, can be left empty to "
+                   "generate based on options.")
+@click.option('--tsp', '-t', default="Dyn",
+              type=click.Choice(["Dyn", "MST"], case_sensitive=False),
+              help="Algorithm for calculating the TSP heuristic: "
+                   "using dynamic programming, or a "
+                   "minimum spanning tree approximation. (Default: Dyn)")
+@click.option('--cores', '-c',
+              type=click.IntRange(1, multiprocessing.cpu_count()),
+              default=max(multiprocessing.cpu_count() - 2, 1),
+              help="Number of cores to use concurrently, "
+                   "requires more than one benchmark "
+                   "or a progressive benchmark.")
+@click.option('--debug', '-d', is_flag=True,
+              help="Run benchmark(s) as debug attempt.")
+@click.option('--verbose', '-v', is_flag=True,
+              help="Print and log extra information during solving.")
+@click.option('--official', '-o', is_flag=True,
+              help="Indicate this is an officially timed run on the "
+                   "TU Delft server. Will append '(TU)' to the version.")
+def main(benchmarks, name, tsp, cores, debug, verbose, official):
+    if not name:
+        name = f"tsp={tsp}"
+    if official:
+        name += ' (TU)'
+
+    def prepped_solver(problem: Problem) -> List:
+        return solver(problem, {
+            "tsp": tsp.lower()
+        })
+
     api_key = open("api_key.txt", "r").read().strip()
-    benchmark = MapfwBenchmarker(api_key, id,
-                                 "A*+OD+ID", "opt TSP", not for_real,
-                                 solver, cores=2)
-    logger.start(info=benchmark.debug)
+    benchmark = MapfwBenchmarker(api_key, benchmarks, "A*+OD+ID", name,
+                                 debug, prepped_solver, cores=cores)
+    logger.start(info=debug, debug=verbose)
     benchmark.run()
     logger.stop()
 
 
 if __name__ == "__main__":
-    bid = int(input("Benchmark ID: "))
-    for_real = input("For real (y/[n]): ")
-    run_for(bid, for_real == 'y')
-    # run_for([31, 32], False)
-    # for id in [55, 27, 33, 62]:
-    #     run_for(id, True)
+    main()

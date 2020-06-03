@@ -15,6 +15,10 @@ class Grid:
         self.h = height
         self.walls = [[False for _ in range(width)] for _ in range(height)]
 
+        self.options = {
+            "tsp": "opt"
+        }
+
         self.agents = 0
         self.starts = []
         self.goals = []
@@ -143,6 +147,7 @@ class Grid:
 
         new_grid = Grid(self.w, self.h, illegal_moves)
         new_grid.walls = self.walls
+        new_grid.options = self.options
 
         for agent_index in agents:
             new_grid.starts.append(self.starts[agent_index])

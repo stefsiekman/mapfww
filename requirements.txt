@@ -2,3 +2,4 @@ mapfw==0.4.3
 func-timeout==4.3.5
 GitPython==3.1.2
 Pillow==7.1.2
+click==7.1.2
