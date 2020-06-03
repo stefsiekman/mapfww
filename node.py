@@ -6,7 +6,8 @@ from edge import Edge
 class Node:
 
     def __init__(self, grid, positions, moves, cost, goal_waits, conflicts,
-                 taken_edges, parent=None, visited_waypoints=None):
+                 taken_edges, parent=None, visited_waypoints=None,
+                 new_heuristic=None):
         self.grid = grid
         self.positions = positions
         self.moves = moves
@@ -30,9 +31,12 @@ class Node:
         self.post_moves = [move if move is not None else pos
                            for pos, move in zip(self.positions, self.moves)]
 
-        self.heuristic = sum(grid.heuristic(agent, self.post_moves[agent],
-                                            self.visited_waypoints[agent])
-                             for agent in range(len(positions)))
+        if new_heuristic is None:
+            self.heuristic = sum(grid.heuristic(agent, self.post_moves[agent],
+                                                self.visited_waypoints[agent])
+                                 for agent in range(len(positions)))
+        else:
+            self.heuristic = new_heuristic
 
         self.f = self.cost + self.heuristic
 
@@ -95,14 +99,23 @@ class Node:
                 new_goal_waits = self.goal_waits[:]
                 new_goal_waits[agent] += 1
             elif self.goal_waits[agent]:
-                additional_cost = self.goal_waits[agent] +1
+                additional_cost = self.goal_waits[agent] + 1
                 new_goal_waits = self.goal_waits[:]
                 new_goal_waits[agent] = 0
+
+            # Calculate the new heuristic by looking at the difference for
+            # only this agent
+            h_before = self.grid.heuristic(agent, position,
+                                           self.visited_waypoints[agent])
+            h_after = self.grid.heuristic(agent, neighbour,
+                                          new_visited_waypoints[agent])
+            h_difference = h_after - h_before
+            new_heuristic = self.heuristic + h_difference
 
             new_node = Node(self.grid, self.positions, new_moves,
                             self.cost + additional_cost, new_goal_waits,
                             new_conflicts, new_taken_edges, self,
-                            new_visited_waypoints)
+                            new_visited_waypoints, new_heuristic)
             new_nodes.append(new_node)
 
         return new_nodes
