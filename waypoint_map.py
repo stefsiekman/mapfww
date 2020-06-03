@@ -60,9 +60,6 @@ class WaypointMap:
         n = len(ordered_waypoints)
         all_indices = set(range(n))
 
-        if n > 8:
-            print(f"Solving TSP of n = {n}...")
-
         memory = {}
         queue = Queue()
 
@@ -97,9 +94,6 @@ class WaypointMap:
         full_path = tuple(range(n))
         for index, wp in enumerate(ordered_waypoints):
             result[wp] = memory[(full_path, index)][0]
-
-        if n > 8:
-            print(f"done")
 
         self.shared_cache[cache_key] = result
         return result

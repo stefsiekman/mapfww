@@ -34,8 +34,8 @@ def solver(problem: Problem) -> List:
 
 def run_for(id, for_real):
     benchmark = MapfwBenchmarker("ffA1D303A8D47e39", id,
-                                 "A*+OD+ID", "correct TSP cache", not for_real,
-                                 solver, cores=3)
+                                 "A*+OD+ID", "opt TSP", not for_real,
+                                 solver, cores=2)
     logger.start(info=benchmark.debug)
     benchmark.run()
     logger.stop()
