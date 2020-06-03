@@ -132,7 +132,8 @@ class Grid:
         return heuristics
 
     def heuristic(self, agent, position, visited_waypoints):
-        return self.waypoints[agent].heuristic(position, visited_waypoints)
+        return self.waypoints[agent].heuristic(position, visited_waypoints,
+                                               self.options)
 
     def on_waypoint(self, agent, position):
         return self.waypoints[agent].is_waypoint(position)

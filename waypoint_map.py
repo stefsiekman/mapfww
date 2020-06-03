@@ -20,7 +20,8 @@ class WaypointMap:
         self.waypoints.add((x, y))
         self.distance_maps[(x, y)] = self.grid.backtrack_heuristics((x, y))
 
-    def heuristic(self, position, visited_waypoints: Set[Tuple[int, int]]):
+    def heuristic(self, position, visited_waypoints: Set[Tuple[int, int]],
+                  options):
         """
         Calculate the heuristic for an agent, given a current position and
         a set of waypoints that have already been visited.
