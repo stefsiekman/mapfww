@@ -38,7 +38,9 @@ def solve_od(grid) -> PathSet:
     max_cost = 0
 
     while not open_nodes.empty():
-        f, conflicts, h, id, node = open_nodes.get()
+        f, _, _, id, node = open_nodes.get()
+        conflicts = node.conflicts
+        h = node.heuristic
 
         logger.debug(
             f"\n==> At node #{id} (f = {f}, h = {node.heuristic}, g = {node.cost})")
@@ -76,17 +78,16 @@ def solve_od(grid) -> PathSet:
             return create_solution(grid, node)
 
         for new_node in node.expand():
-            item = (new_node.f, new_node.conflicts, new_node.heuristic,
-                    node_id, new_node)
+            pc = grid.options["pc"]
+            p1 = new_node.conflicts if pc else new_node.heuristic
+            p2 = new_node.heuristic if pc else new_node.conflicts
+            item = (new_node.f, p1, p2, node_id, new_node)
 
             logger.debug(f"    + #{node_id} h = {new_node.heuristic}, "
                          f"g = {new_node.cost} at {new_node.positions} with {new_node.visited_waypoints}")
 
             node_id += 1
             open_nodes.put(item)
-
-        # if node_id > 1000:
-        #     exit()
 
     logger.info("They never made it...")
 

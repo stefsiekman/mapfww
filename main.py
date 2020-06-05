@@ -49,6 +49,9 @@ def solver(problem: Problem, options) -> List:
               help="Number of cores to use concurrently, "
                    "requires more than one benchmark "
                    "or a progressive benchmark.")
+@click.option('--prio-conflicts', '-p', is_flag=True,
+              help="Prioritize lower conflicts before a lower heuristic when "
+                   "expanding nodes.")
 @click.option('--debug', '-d', is_flag=True,
               help="Run benchmark(s) as debug attempt.")
 @click.option('--verbose', '-v', is_flag=True,
@@ -56,17 +59,18 @@ def solver(problem: Problem, options) -> List:
 @click.option('--official', '-o', is_flag=True,
               help="Indicate this is an officially timed run on the "
                    "TU Delft server. Will append '(TU)' to the version.")
-def main(benchmarks, name, tsp, cores, cache_heuristic, debug, verbose,
+def main(benchmarks, name, tsp, cores, prio_conflicts, debug, verbose,
          official):
     if not name:
         name = f"tsp={tsp}," \
-               f"ch={'T' if cache_heuristic else 'F'}"
+               f"pc={'T' if prio_conflicts else 'F'}"
     if official:
         name += ' (TU)'
 
     def prepped_solver(problem: Problem) -> List:
         return solver(problem, {
-            "tsp": tsp.lower()
+            "tsp": tsp.lower(),
+            "pc": prio_conflicts
         })
 
     api_key = open("api_key.txt", "r").read().strip()
