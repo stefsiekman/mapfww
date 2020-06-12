@@ -48,6 +48,9 @@ class WaypointMap:
             mst.add_edge(position, wp, self.distance_maps[wp][y][x])
             mst.add_edge(self.goal, wp, self.goal_heuristics[wpy][wpx])
 
+        if len(to_visit) == 0:
+            mst.add_edge(position, self.goal, self.goal_heuristics[y][x])
+
         # Between waypoints
         for i, wpa in enumerate(to_visit):
             for j, wpb, in enumerate(to_visit):
