@@ -4,12 +4,14 @@ from math import factorial
 from typing import Tuple, Set, Optional, Dict
 
 import logger
+from mst import MST
 
 
 class WaypointMap:
 
     def __init__(self, grid, goal: Tuple[int, int]):
         self.grid = grid
+        self.goal = goal
         self.waypoints = set()
         self.distance_maps = dict()
         self.goal_heuristics = grid.backtrack_heuristics(goal)
@@ -27,6 +29,36 @@ class WaypointMap:
         a set of waypoints that have already been visited.
         """
 
+        if options["tsp"] == "dyn":
+            return self.heuristic_tsp(position, visited_waypoints)
+
+        return self.heuristic_mst(position, visited_waypoints)
+
+    def heuristic_mst(self, position, visited_waypoints: Set[Tuple[int, int]]):
+        x, y = position
+        to_visit = self.waypoints - visited_waypoints
+
+        mst = MST()
+        mst.add_vertices(to_visit)
+        mst.add_vertex(position)
+        mst.add_vertex(self.goal)
+
+        for wp in to_visit:
+            wpx, wpy = wp
+            mst.add_edge(position, wp, self.distance_maps[wp][y][x])
+            mst.add_edge(self.goal, wp, self.goal_heuristics[wpy][wpx])
+
+        # Between waypoints
+        for i, wpa in enumerate(to_visit):
+            for j, wpb, in enumerate(to_visit):
+                if i <= j:
+                    continue
+                xb, yb = wpb
+                mst.add_edge(wpa, wpb, self.distance_maps[wpa][yb][xb])
+
+        return mst.cost()
+
+    def heuristic_tsp(self, position, visited_waypoints: Set[Tuple[int, int]]):
         x, y = position
 
         if len(visited_waypoints) != len(self.waypoints):
