@@ -36,6 +36,10 @@ class WaypointMap:
 
     def heuristic_mst(self, position, visited_waypoints: Set[Tuple[int, int]]):
         x, y = position
+
+        if len(visited_waypoints) == len(self.waypoints):
+            return self.goal_heuristics[y][x]
+
         to_visit = self.waypoints - visited_waypoints
 
         mst = MST()
@@ -47,9 +51,6 @@ class WaypointMap:
             wpx, wpy = wp
             mst.add_edge(position, wp, self.distance_maps[wp][y][x])
             mst.add_edge(self.goal, wp, self.goal_heuristics[wpy][wpx])
-
-        if len(to_visit) == 0:
-            mst.add_edge(position, self.goal, self.goal_heuristics[y][x])
 
         # Between waypoints
         for i, wpa in enumerate(to_visit):
