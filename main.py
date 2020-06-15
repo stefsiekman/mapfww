@@ -75,7 +75,7 @@ def main(benchmarks, name, tsp, cores, prio_conflicts, debug, verbose,
 
     api_key = open("api_key.txt", "r").read().strip()
     benchmark = MapfwBenchmarker(api_key, benchmarks, "A*+OD+ID", name,
-                                 debug, prepped_solver, cores=cores)
+                                 debug, prepped_solver, cores=cores, baseURL="http://localhost:5000/")
     logger.start(info=debug, debug=verbose)
     benchmark.run()
     logger.stop()
