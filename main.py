@@ -49,9 +49,13 @@ def solver(problem: Problem, options) -> List:
               help="Number of cores to use concurrently, "
                    "requires more than one benchmark "
                    "or a progressive benchmark.")
+@click.option('--sequential', '-s', is_flag=True,
+              help="Force visiting the waypoints in sequential ordering as "
+                   "received from the server.")
 @click.option('--prio-conflicts', '-p', is_flag=True,
               help="Prioritize lower conflicts before a lower heuristic when "
-                   "expanding nodes.")
+                   "expanding nodes. With this option, the TSP method is "
+                   "irrelevant.")
 @click.option('--debug', '-d', is_flag=True,
               help="Run benchmark(s) as debug attempt.")
 @click.option('--verbose', '-v', is_flag=True,
@@ -59,23 +63,26 @@ def solver(problem: Problem, options) -> List:
 @click.option('--official', '-o', is_flag=True,
               help="Indicate this is an officially timed run on the "
                    "TU Delft server. Will append '(TU)' to the version.")
-def main(benchmarks, name, tsp, cores, prio_conflicts, debug, verbose,
-         official):
+def main(benchmarks, name, tsp, cores, sequential, prio_conflicts, debug,
+         verbose, official):
     if not name:
-        name = f"tsp={tsp}," \
-               f"pc={'T' if prio_conflicts else 'F'}"
+        name = f"pc={'T' if prio_conflicts else 'F'}," \
+               f"ord={'T' if sequential else 'F'}"
+        if not sequential:
+            name = f"tsp={tsp}," + name
     if official:
         name += ' (TU)'
 
     def prepped_solver(problem: Problem) -> List:
         return solver(problem, {
             "tsp": tsp.lower(),
-            "pc": prio_conflicts
+            "pc": prio_conflicts,
+            "ord": sequential
         })
 
     api_key = open("api_key.txt", "r").read().strip()
     benchmark = MapfwBenchmarker(api_key, benchmarks, "A*+OD+ID", name,
-                                 debug, prepped_solver, cores=cores, baseURL="http://localhost:5000/")
+                                 debug, prepped_solver, cores=cores)
     logger.start(info=debug, debug=verbose)
     benchmark.run()
     logger.stop()
