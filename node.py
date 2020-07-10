@@ -85,7 +85,8 @@ class Node:
 
             # Check if this means a new waypoint is now visited for this agent
             new_visited_waypoints = self.visited_waypoints
-            if self.grid.on_waypoint(agent, neighbour):
+            if self.grid.on_visitable_waypoint(agent, neighbour,
+                                               self.visited_waypoints[agent]):
                 new_visited_waypoints = [ws.copy() for ws in
                                          new_visited_waypoints]
                 new_visited_waypoints[agent].add(neighbour)

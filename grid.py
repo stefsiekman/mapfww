@@ -135,8 +135,18 @@ class Grid:
         return self.waypoints[agent].heuristic(position, visited_waypoints,
                                                self.options)
 
-    def on_waypoint(self, agent, position):
-        return self.waypoints[agent].is_waypoint(position)
+    def on_visitable_waypoint(self, agent, position, visited):
+        if position in visited:
+            return False
+
+        return self.waypoints[agent].is_waypoint(position) and \
+               self.can_visit_waypoint(agent, position, visited)
+
+    def can_visit_waypoint(self, agent, position, visited):
+        if not self.options["ord"]:
+            return True
+
+        return self.waypoints[agent].is_next_waypoint(position, visited)
 
     def copy(self, agents, cat: CAT, illegal_moves=None):
         """

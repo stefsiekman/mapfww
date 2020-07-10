@@ -13,6 +13,7 @@ class WaypointMap:
         self.grid = grid
         self.goal = goal
         self.waypoints = set()
+        self.ordered_waypoints = []
         self.distance_maps = dict()
         self.goal_heuristics = grid.backtrack_heuristics(goal)
         self.cache = dict()
@@ -20,6 +21,7 @@ class WaypointMap:
 
     def add_waypoint(self, x, y):
         self.waypoints.add((x, y))
+        self.ordered_waypoints.append((x, y))
         self.distance_maps[(x, y)] = self.grid.backtrack_heuristics((x, y))
 
     def heuristic(self, position, visited_waypoints: Set[Tuple[int, int]],
@@ -28,6 +30,16 @@ class WaypointMap:
         Calculate the heuristic for an agent, given a current position and
         a set of waypoints that have already been visited.
         """
+
+        # If already visited all the waypoints: straight to goal
+        x, y = position
+        if len(visited_waypoints) == len(self.waypoints):
+            return self.goal_heuristics[y][x]
+
+        # Ordered waypoints: to next unvisited waypoint
+        if options["ord"]:
+            next_waypoint = self.ordered_waypoints[len(visited_waypoints)]
+            return self.distance_maps[next_waypoint][y][x]
 
         if options["tsp"] == "dyn":
             return self.heuristic_tsp(position, visited_waypoints)
@@ -132,6 +144,12 @@ class WaypointMap:
 
     def is_waypoint(self, position):
         return position in self.waypoints
+
+    def is_next_waypoint(self, position, visited):
+        assert position not in visited
+        assert len(visited) < len(self.ordered_waypoints)
+
+        return self.ordered_waypoints[len(visited)] == position
 
     def are_all(self, waypoints: Set[Tuple[int, int]]):
         """

@@ -1,5 +1,6 @@
 import multiprocessing
 import sys
+import time
 from typing import List
 
 import click
@@ -15,6 +16,8 @@ def solver(problem: Problem, options) -> List:
     grid = Grid(problem.width, problem.height)
     grid.options = options
 
+    time_start = time.time()
+
     for y in range(problem.height):
         for x in range(problem.width):
             if problem.grid[y][x] == 1:
@@ -26,6 +29,8 @@ def solver(problem: Problem, options) -> List:
     for agent, waypoints in enumerate(problem.waypoints):
         for waypoint in waypoints:
             grid.add_waypoint(agent, waypoint[0], waypoint[1])
+
+    print(f"Parsed in {round((time.time() - time_start) * 1000)} ms")
 
     solution = solve_od_id(grid)
 
