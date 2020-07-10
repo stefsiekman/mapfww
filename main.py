@@ -54,6 +54,10 @@ def solver(problem: Problem, options) -> List:
               help="Number of cores to use concurrently, "
                    "requires more than one benchmark "
                    "or a progressive benchmark.")
+@click.option('--timeout', '-t',
+              type=click.IntRange(100, 24*60*60*1000),
+              help="Timeout for the benchmark in milliseconds.",
+              required=False)
 @click.option('--sequential', '-s', is_flag=True,
               help="Force visiting the waypoints in sequential ordering as "
                    "received from the server.")
@@ -68,7 +72,7 @@ def solver(problem: Problem, options) -> List:
 @click.option('--official', '-o', is_flag=True,
               help="Indicate this is an officially timed run on the "
                    "TU Delft server. Will append '(TU)' to the version.")
-def main(benchmarks, name, tsp, cores, sequential, prio_conflicts, debug,
+def main(benchmarks, name, tsp, cores, timeout, sequential, prio_conflicts, debug,
          verbose, official):
     if not name:
         name = f"pc={'T' if prio_conflicts else 'F'}," \
@@ -87,7 +91,7 @@ def main(benchmarks, name, tsp, cores, sequential, prio_conflicts, debug,
 
     api_key = open("api_key.txt", "r").read().strip()
     benchmark = MapfwBenchmarker(api_key, benchmarks, "A*+OD+ID", name,
-                                 debug, prepped_solver, cores=cores)
+                                 debug, prepped_solver, cores=cores, timeout=timeout)
     logger.start(info=debug, debug=verbose)
     benchmark.run()
     logger.stop()

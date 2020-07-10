@@ -36,10 +36,21 @@ class WaypointMap:
         if len(visited_waypoints) == len(self.waypoints):
             return self.goal_heuristics[y][x]
 
-        # Ordered waypoints: to next unvisited waypoint
+        # Ordered waypoints: to next unvisited waypoint via all next to goal
         if options["ord"]:
-            next_waypoint = self.ordered_waypoints[len(visited_waypoints)]
-            return self.distance_maps[next_waypoint][y][x]
+            last_waypoint = self.ordered_waypoints[-1]
+            wpx, wpy = last_waypoint
+            waypoints_from_goal = 2
+            distance = self.goal_heuristics[wpy][wpx]
+
+            while len(visited_waypoints) <= len(self.waypoints) - waypoints_from_goal:
+                waypoint = self.ordered_waypoints[len(self.waypoints) - waypoints_from_goal]
+                wpx, wpy = last_waypoint
+                distance += self.distance_maps[waypoint][wpy][wpx]
+                last_waypoint = waypoint
+                waypoints_from_goal += 1
+
+            return distance + self.distance_maps[last_waypoint][y][x]
 
         if options["tsp"] == "dyn":
             return self.heuristic_tsp(position, visited_waypoints)

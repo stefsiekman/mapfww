@@ -22,6 +22,36 @@ class WaypointMapTest(unittest.TestCase):
 
         return map
 
+    def test_ordered_1(self):
+        map = WaypointMapTest.example_map()
+        self.assertEqual(10, map.heuristic((3,1), {(2,0),(1,5)}, {
+            "ord": True
+        }))
+
+    def test_ordered_2(self):
+        map = WaypointMapTest.example_map()
+        self.assertEqual(6, map.heuristic((3,1), {(2,0),(1,5),(5,2)}, {
+            "ord": True
+        }))
+
+    def test_ordered_3(self):
+        map = WaypointMapTest.example_map()
+        self.assertEqual(2, map.heuristic((3,1), {(2,0),(1,5),(5,2),(1,2)}, {
+            "ord": True
+        }))
+
+    def test_ordered_4(self):
+        map = WaypointMapTest.example_map()
+        self.assertEqual(20, map.heuristic((3,1), {(2,0)}, {
+            "ord": True
+        }))
+
+    def test_ordered_5(self):
+        map = WaypointMapTest.example_map()
+        self.assertEqual(22, map.heuristic((3,1), set(), {
+            "ord": True
+        }))
+
     def test_mst_tsp(self):
         map = WaypointMapTest.example_map()
         self.assertEqual(11, map.heuristic_mst((0, 0), {(1, 5)}))
